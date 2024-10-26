@@ -1,5 +1,6 @@
 #include <cmath>
 #include <ctime>
+#include <chrono>
 #include <iostream>
 #include <cstring>
 
@@ -8,6 +9,19 @@
 #include "GUI.h"
 
 #define GAP 20
+#define FPS 60.0
+
+int getDigitAtPos(int number, int pos)
+{
+    std::string str = std::to_string(std::abs(number));
+    int ndig = str.length();
+    if (pos > 0 && pos <= ndig) {
+        return str.at(pos-1) - '0';
+    } else {
+        return 0;
+    }
+    
+}
 
 class MainWindow : public Window
 {
@@ -26,6 +40,8 @@ public:
 private:
     RGB         m_foreground;
     Digit7      *fps1, *fps2, *fps3;
+    uint32_t m_totalFrames;
+    float m_dt;
 };
 
 void MainWindow::OnDraw(Context *cr)
@@ -50,20 +66,24 @@ void MainWindow::OnCreate()
     fps1->SetColor(m_foreground);
     AddChild(fps1, pt, r);
 
-    fps2 = new Digit7(1);
+    fps2 = new Digit7(0);
     fps2->SetColor(m_foreground);
     AddChild(fps2, pt + Point(30, 0), r);
 
     fps3 = new Digit7(0);
     fps3->SetColor(m_foreground);
-    AddChild(fps3, pt + Point(50, 0), r);
+    AddChild(fps3, pt + Point(60, 0), r);
 
 	// AdjustControls();
 	SetFps();
-    CreateTimeout(this,1000);
+    CreateTimeout(this, 1000.0 / FPS);
 
     // фокус ввода
     CaptureKeyboard(this);
+
+    // fps
+    m_totalFrames = 0;
+    float m_dt = 1.0 / FPS;
 }
 
 void MainWindow::OnSizeChanged()
@@ -89,6 +109,7 @@ bool MainWindow::OnKeyPress(uint64_t keyval)
 bool MainWindow::OnTimeout()
 {
 	std::cout << "MainWindow::OnTimeout()" << std::endl;
+    m_totalFrames++;
 
 	SetFps();
 	ReDraw();
@@ -99,9 +120,20 @@ void MainWindow::SetFps()
 {
 	time_t ct = time(NULL);
     struct tm *t = localtime(&ct);
-    fps1->SetDigit(t->tm_hour/10);
-    fps2->SetDigit(t->tm_hour%10);
-    fps3->SetDigit(t->tm_min/10);
+    if (m_totalFrames >= 1000) {
+        fps1->SetDigit(getDigitAtPos(9, 1));
+        fps2->SetDigit(getDigitAtPos(9, 2));
+        fps3->SetDigit(getDigitAtPos(9, 3));
+    } else if (m_totalFrames >= 100) {
+        fps1->SetDigit(getDigitAtPos(m_totalFrames, 1));
+        fps2->SetDigit(getDigitAtPos(m_totalFrames, 2));
+        fps3->SetDigit(getDigitAtPos(m_totalFrames, 3));
+    } else if (m_totalFrames >= 10) {
+        fps2->SetDigit(getDigitAtPos(m_totalFrames, 1));
+        fps3->SetDigit(getDigitAtPos(m_totalFrames, 2));
+    } else {
+        fps3->SetDigit(getDigitAtPos(m_totalFrames, 1));
+    }
 }
 
 // функция main
