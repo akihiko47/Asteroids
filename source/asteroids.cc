@@ -91,7 +91,7 @@ void MainWindow::OnCreate()
     // Игрок
     m_player = new Mesh(MeshType::Player);
     m_player->SetColor(m_foreground);
-    AddChild(m_player, Point(400, 400), Rect(20, 20));
+    AddChild(m_player, Point(400, 400), Rect(30, 30));
 
 }
 
@@ -104,13 +104,13 @@ void MainWindow::OnSizeChanged()
 
 bool MainWindow::OnKeyPress(uint64_t keyval)
 {
-    if(keyval == 'q')
+    if(keyval == 'a')
     {
-        DeleteMe();
+        m_player->SetRotation(m_player->GetRotation() - 0.1);
     }
-    else if(keyval == 'p' || keyval == 'P')
+    else if(keyval == 'd')
     {
-        theGUI->Print();
+        m_player->SetRotation(m_player->GetRotation() + 0.1);
     }
     return true;
 }
@@ -120,7 +120,7 @@ bool MainWindow::OnTimeout()
 	std::cout << "MainWindow::OnTimeout()" << std::endl;
     m_totalFrames++;
 
-    m_player->SetPosition(m_player->GetPosition() + Point(0, -1));
+    //m_player->SetPosition(m_player->GetPosition() + Point(0, -1));
 
 	SetScore();
 	ReDraw();
@@ -132,9 +132,9 @@ void MainWindow::SetScore()
 	time_t ct = time(NULL);
     struct tm *t = localtime(&ct);
     if (m_totalFrames >= 1000) {
-        fps1->SetDigit(getDigitAtPos(9, 1));
-        fps2->SetDigit(getDigitAtPos(9, 2));
-        fps3->SetDigit(getDigitAtPos(9, 3));
+        fps1->SetDigit(9);
+        fps2->SetDigit(9);
+        fps3->SetDigit(9);
     } else if (m_totalFrames >= 100) {
         fps1->SetDigit(getDigitAtPos(m_totalFrames, 1));
         fps2->SetDigit(getDigitAtPos(m_totalFrames, 2));

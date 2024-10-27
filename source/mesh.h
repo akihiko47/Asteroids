@@ -18,6 +18,7 @@ public:
     void   SetThickness(double thickness);
     double GetRotation();
     void   SetRotation(double phi);
+    Point  RotatePoint(Point o, Point p, double r);
 
     MeshType GetMeshType();
     void     SetMeshType(MeshType meshType);

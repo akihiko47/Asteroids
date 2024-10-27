@@ -1,13 +1,19 @@
 #include "window.h"
 #include "mesh.h"
 #include <iostream>
+#include <cmath>
 
 int Mesh::m_meshLength[] = {5, 4, 4};
-Point Mesh::m_meshPlayer[] = {Point(0, 20), Point(10, 0), Point(20, 20), Point(10, 15), Point(0, 20)};
+Point Mesh::m_meshPlayer[] = {Point(5, 25), Point(15, 5), Point(25, 25), Point(15, 20), Point(5, 25)};
+
 
 Mesh::Mesh(MeshType meshType)
 {
+    m_ClassName = __FUNCTION__;
     m_meshType = meshType;
+    m_rotation = 0.0;
+    m_Color = RGB(1,1,1);
+    m_thickness = 0.1;
 }
 
 Mesh::~Mesh()
@@ -51,23 +57,43 @@ void Mesh::SetMeshType(MeshType meshType) {
     m_meshType = meshType;
 }
 
+Point Mesh::RotatePoint(Point o, Point p, double phi) {
+    double s = sin(phi);
+    double c = cos(phi);
+
+    int xnew = (int)p.GetX() - (int)o.GetX();
+    int ynew = (int)p.GetY() - (int)o.GetY();
+
+    std::cout << s << " " << c << "\n";
+
+    float xr = xnew * c - ynew * s;
+    float yr = xnew * s + ynew * c;
+
+    xr = xr + o.GetX();
+    yr = yr + o.GetY();
+
+    Point res = Point(xr, yr);
+
+    return res;
+}
+
 void Mesh::OnDraw(Context *cr)
 {
     cr->SetColor(m_Color);
 
-    uint16_t n = m_meshLength[(int)m_meshType];
     Rect mysize = GetInteriorSize();
     uint16_t x = mysize.GetWidth(), y = mysize.GetHeight();
     uint16_t s = x < y ? x : y;
-
-    std::cout << "x = " << x << "\n";
-    std::cout << "y = " << y << "\n";
-    std::cout << "s = " << s << "\n";
+    Point center = Point(s * 0.5, s * 0.5);
 
     switch (m_meshType)
     {
         case MeshType::Player:
-            cr->Polyline(n, m_meshPlayer);
+            Point pts[5];
+            for (int i = 0; i < 5; i++) {
+                pts[i] = RotatePoint(center, m_meshPlayer[i], m_rotation);
+            }
+            cr->Polyline(5, pts);
             break;
     }
     
