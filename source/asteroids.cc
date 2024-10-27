@@ -6,10 +6,11 @@
 
 #include "window.h"
 #include "digit7.h"
+#include "mesh.h"
 #include "GUI.h"
 
 #define GAP 20
-#define FPS 60.0
+#define FPS 30.0
 
 int getDigitAtPos(int number, int pos)
 {
@@ -35,13 +36,15 @@ public:
     bool OnKeyPress(uint64_t value);
     bool OnTimeout();
     void AdjustControls();
-    void SetFps();
+    void SetScore();
 
 private:
     RGB         m_foreground;
     Digit7      *fps1, *fps2, *fps3;
     uint32_t m_totalFrames;
     float m_dt;
+
+    Mesh *m_player;
 };
 
 void MainWindow::OnDraw(Context *cr)
@@ -75,7 +78,7 @@ void MainWindow::OnCreate()
     AddChild(fps3, pt + Point(60, 0), r);
 
 	// AdjustControls();
-	SetFps();
+	SetScore();
     CreateTimeout(this, 1000.0 / FPS);
 
     // фокус ввода
@@ -84,6 +87,12 @@ void MainWindow::OnCreate()
     // fps
     m_totalFrames = 0;
     float m_dt = 1.0 / FPS;
+
+    // Игрок
+    m_player = new Mesh(MeshType::Player);
+    m_player->SetColor(m_foreground);
+    AddChild(m_player, Point(400, 400), Rect(20, 20));
+
 }
 
 void MainWindow::OnSizeChanged()
@@ -111,12 +120,14 @@ bool MainWindow::OnTimeout()
 	std::cout << "MainWindow::OnTimeout()" << std::endl;
     m_totalFrames++;
 
-	SetFps();
+    m_player->SetPosition(m_player->GetPosition() + Point(0, -1));
+
+	SetScore();
 	ReDraw();
     return true;
 }
 
-void MainWindow::SetFps()
+void MainWindow::SetScore()
 {
 	time_t ct = time(NULL);
     struct tm *t = localtime(&ct);

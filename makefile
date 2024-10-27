@@ -1,7 +1,7 @@
 # gui3
 LIB = libgui3.a
-SRCS = button.cc edit.cc GUI.cc image.cc list.cc scroll.cc text.cc window.cc
-HEADERS = button.h context.h edit.h GUI.h image.h list.h mytypes.h scroll.h text.h window.h
+SRCS = button.cc edit.cc GUI.cc image.cc list.cc scroll.cc text.cc window.cc mesh.cc
+HEADERS = button.h context.h edit.h GUI.h image.h list.h mytypes.h scroll.h text.h window.h mesh.h
 OBJS = $(addprefix obj/,$(SRCS:.cc=.o))
 CC = g++
 CFLAGS = -g `pkg-config --cflags gtk+-3.0` -std=c++11
@@ -10,7 +10,7 @@ LDFLAGS = `pkg-config --libs gtk+-3.0` # -fsanitize=leak
 # examples
 EXAMPLES = browse calc clock draw myprog quad view test asteroids
 
-ASTEROIDS_SRCS = digit7.cc asteroids.cc
+ASTEROIDS_SRCS = digit7.cc asteroids.cc mesh.cc
 ASTEROIDS_OBJS = $(addprefix obj/,$(ASTEROIDS_SRCS:.cc=.o))
 
 BROWSE_SRCS = browse.cc
