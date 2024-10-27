@@ -4,7 +4,7 @@
 #include <cmath>
 
 int Mesh::m_meshLength[] = {5, 4, 4};
-Point Mesh::m_meshPlayer[] = {Point(5, 25), Point(15, 5), Point(25, 25), Point(15, 20), Point(5, 25)};
+Point Mesh::m_meshPlayer[] = {Point(5, 23), Point(15, 3), Point(25, 23), Point(15, 18), Point(5, 23)};
 
 
 Mesh::Mesh(MeshType meshType)
@@ -13,7 +13,7 @@ Mesh::Mesh(MeshType meshType)
     m_meshType = meshType;
     m_rotation = 0.0;
     m_Color = RGB(1,1,1);
-    m_thickness = 0.1;
+    m_thickness = 1.0;
 }
 
 Mesh::~Mesh()
@@ -57,17 +57,15 @@ void Mesh::SetMeshType(MeshType meshType) {
     m_meshType = meshType;
 }
 
-Point Mesh::RotatePoint(Point o, Point p, double phi) {
+Point Mesh::RotatePoint(const Point &o, const Point &p, double phi) {
     double s = sin(phi);
     double c = cos(phi);
 
-    int xnew = (int)p.GetX() - (int)o.GetX();
-    int ynew = (int)p.GetY() - (int)o.GetY();
+    double xnew = p.GetX() - o.GetX();
+    double ynew = p.GetY() - o.GetY();
 
-    std::cout << s << " " << c << "\n";
-
-    float xr = xnew * c - ynew * s;
-    float yr = xnew * s + ynew * c;
+    double xr = xnew * c - ynew * s;
+    double yr = xnew * s + ynew * c;
 
     xr = xr + o.GetX();
     yr = yr + o.GetY();
@@ -80,6 +78,7 @@ Point Mesh::RotatePoint(Point o, Point p, double phi) {
 void Mesh::OnDraw(Context *cr)
 {
     cr->SetColor(m_Color);
+    cr->SetLineWidth(m_thickness);
 
     Rect mysize = GetInteriorSize();
     uint16_t x = mysize.GetWidth(), y = mysize.GetHeight();

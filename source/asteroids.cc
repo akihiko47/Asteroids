@@ -1,16 +1,19 @@
 #include <cmath>
 #include <ctime>
-#include <chrono>
 #include <iostream>
 #include <cstring>
 
 #include "window.h"
 #include "digit7.h"
 #include "mesh.h"
+#include "gameobject.h"
 #include "GUI.h"
 
 #define GAP 20
 #define FPS 30.0
+#define DT 1.0 / FPS
+
+#define PLAYER_SPEED 150
 
 int getDigitAtPos(int number, int pos)
 {
@@ -44,7 +47,7 @@ private:
     uint32_t m_totalFrames;
     float m_dt;
 
-    Mesh *m_player;
+    GameObject *m_player;
 };
 
 void MainWindow::OnDraw(Context *cr)
@@ -89,10 +92,7 @@ void MainWindow::OnCreate()
     float m_dt = 1.0 / FPS;
 
     // Игрок
-    m_player = new Mesh(MeshType::Player);
-    m_player->SetColor(m_foreground);
-    AddChild(m_player, Point(400, 400), Rect(30, 30));
-
+    m_player = new GameObject(this, Point(400, 400), Rect(30, 30), MeshType::Player);
 }
 
 void MainWindow::OnSizeChanged()
@@ -106,11 +106,15 @@ bool MainWindow::OnKeyPress(uint64_t keyval)
 {
     if(keyval == 'a')
     {
-        m_player->SetRotation(m_player->GetRotation() - 0.1);
+        m_player->Rotate(-0.1);
     }
     else if(keyval == 'd')
     {
-        m_player->SetRotation(m_player->GetRotation() + 0.1);
+        m_player->Rotate(0.1);
+    }
+    else if (keyval == 'w') 
+    {
+        m_player->SetVelocity(m_player->GetForward() * Point(PLAYER_SPEED, PLAYER_SPEED));
     }
     return true;
 }
@@ -120,7 +124,10 @@ bool MainWindow::OnTimeout()
 	std::cout << "MainWindow::OnTimeout()" << std::endl;
     m_totalFrames++;
 
-    //m_player->SetPosition(m_player->GetPosition() + Point(0, -1));
+    m_player->Update(DT);
+
+    std::cout << m_player->GetForward().GetX() << " " << m_player->GetForward().GetY() << "\n";
+    std::cout << m_player->GetPosition().GetX() << " " << m_player->GetPosition().GetY() << "\n";
 
 	SetScore();
 	ReDraw();

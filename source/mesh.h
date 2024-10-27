@@ -18,7 +18,7 @@ public:
     void   SetThickness(double thickness);
     double GetRotation();
     void   SetRotation(double phi);
-    Point  RotatePoint(Point o, Point p, double r);
+    Point  RotatePoint(const Point &o, const Point &p, double phi);  // Вращение точки p вокруг точки o на градус phi (рад)
 
     MeshType GetMeshType();
     void     SetMeshType(MeshType meshType);
