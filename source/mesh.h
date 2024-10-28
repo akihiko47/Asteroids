@@ -1,7 +1,8 @@
 enum class MeshType {
     Player,
     Asteroid1,
-    Asteroid2
+    Asteroid2,
+    Asteroid3
 };
 
 class Mesh : public Window
@@ -37,4 +38,6 @@ private:
     static int   m_meshLength[];
     static Point m_meshPlayer[];
     static Point m_meshAsteroid1[];
+    static Point m_meshAsteroid2[];
+    static Point m_meshAsteroid3[];
 };

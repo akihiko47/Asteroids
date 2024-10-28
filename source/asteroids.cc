@@ -44,14 +44,14 @@ public:
 
 private:
     RGB         m_foreground;
-    Digit7      *fps1, *fps2, *fps3;
     uint32_t m_totalFrames;
     float m_dt;
 
+    // показатели счета
+    Digit7 *num1, *num2, *num3;
+
     // показатели здоровья игрока
-    Mesh *hp1;
-    Mesh *hp2;
-    Mesh *hp3;
+    Mesh *hp1, *hp2, *hp3;
 
     // игрок
     Player *m_player;
@@ -76,17 +76,17 @@ void MainWindow::OnCreate()
     Point pt(20,20);
     Rect r(20,40);
 
-    fps1 = new Digit7(0);
-    fps1->SetColor(m_foreground);
-    AddChild(fps1, pt, r);
+    num1 = new Digit7(0);
+    num1->SetColor(m_foreground);
+    AddChild(num1, pt, r);
 
-    fps2 = new Digit7(0);
-    fps2->SetColor(m_foreground);
-    AddChild(fps2, pt + Point(30, 0), r);
+    num2 = new Digit7(0);
+    num2->SetColor(m_foreground);
+    AddChild(num2, pt + Point(30, 0), r);
 
-    fps3 = new Digit7(0);
-    fps3->SetColor(m_foreground);
-    AddChild(fps3, pt + Point(60, 0), r);
+    num3 = new Digit7(0);
+    num3->SetColor(m_foreground);
+    AddChild(num3, pt + Point(60, 0), r);
 
 	// AdjustControls();
 	SetScore();
@@ -116,8 +116,9 @@ void MainWindow::OnCreate()
     // Астероиды
     for (int i = 0; i < 10; i++)
     {   
+        MeshType meshes[] = {MeshType::Asteroid1, MeshType::Asteroid2, MeshType::Asteroid3};
         int randS = rand()%30 + 30;
-        Asteroid *asteroid = new Asteroid(this, Point(80 * i, 0), Rect(randS, randS), randS * 0.5, MeshType::Asteroid1);    
+        Asteroid *asteroid = new Asteroid(this, Point(80 * i, 0), Rect(randS, randS), randS * 0.4, meshes[i % 3]);    
         asteroid->SetVelocity(Point(std::rand() % 200 - 100, std::rand() % 200 - 100));
         m_asteroids.push_back(asteroid);
     }
@@ -181,18 +182,18 @@ void MainWindow::SetScore()
 	time_t ct = time(NULL);
     struct tm *t = localtime(&ct);
     if (m_totalFrames >= 1000) {
-        fps1->SetDigit(9);
-        fps2->SetDigit(9);
-        fps3->SetDigit(9);
+        num1->SetDigit(9);
+        num2->SetDigit(9);
+        num3->SetDigit(9);
     } else if (m_totalFrames >= 100) {
-        fps1->SetDigit(getDigitAtPos(m_totalFrames, 1));
-        fps2->SetDigit(getDigitAtPos(m_totalFrames, 2));
-        fps3->SetDigit(getDigitAtPos(m_totalFrames, 3));
+        num1->SetDigit(getDigitAtPos(m_totalFrames, 1));
+        num2->SetDigit(getDigitAtPos(m_totalFrames, 2));
+        num3->SetDigit(getDigitAtPos(m_totalFrames, 3));
     } else if (m_totalFrames >= 10) {
-        fps2->SetDigit(getDigitAtPos(m_totalFrames, 1));
-        fps3->SetDigit(getDigitAtPos(m_totalFrames, 2));
+        num2->SetDigit(getDigitAtPos(m_totalFrames, 1));
+        num3->SetDigit(getDigitAtPos(m_totalFrames, 2));
     } else {
-        fps3->SetDigit(getDigitAtPos(m_totalFrames, 1));
+        num3->SetDigit(getDigitAtPos(m_totalFrames, 1));
     }
 }
 

@@ -3,9 +3,11 @@
 #include <iostream>
 #include <cmath>
 
-int Mesh::m_meshLength[] =      {5, 5, 4};
-Point Mesh::m_meshPlayer[] =    {Point(0.25, 0.8), Point(0.5, 0.2), Point(0.75, 0.8), Point(0.5, 0.7), Point(0.25, 0.8)};
-Point Mesh::m_meshAsteroid1[] = {Point(0.2, 0.8), Point(0.2, 0.2), Point(0.8, 0.2), Point(0.8, 0.8), Point(0.2, 0.8)};
+Point Mesh::m_meshPlayer[12] =    {Point(0.25, 0.8), Point(0.5, 0.2), Point(0.75, 0.8), Point(0.5, 0.7), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8)};
+Point Mesh::m_meshAsteroid1[12] = {Point(0.3, 0.4), Point(0.4, 0.2), Point(0.7, 0.2), Point(0.8, 0.5), Point(0.7, 0.8), Point(0.3, 0.8), Point(0.1, 0.5), Point(0.3, 0.4), Point(0.3, 0.4), Point(0.3, 0.4), Point(0.3, 0.4), Point(0.3, 0.4)};
+Point Mesh::m_meshAsteroid2[12] = {Point(0.3, 0.3), Point(0.4, 0.4), Point(0.5, 0.2), Point(0.7, 0.2), Point(0.8, 0.4), Point(0.8, 0.6), Point(0.7, 0.6), Point(0.6, 0.8), Point(0.3, 0.8), Point(0.2, 0.7), Point(0.2, 0.5), Point(0.3, 0.3)};
+Point Mesh::m_meshAsteroid3[12] = {Point(0.3, 0.2), Point(0.4, 0.2), Point(0.8, 0.4), Point(0.8, 0.5), Point(0.7, 0.6), Point(0.5, 0.6), Point(0.5, 0.7), Point(0.4, 0.8), Point(0.3, 0.8), Point(0.2, 0.6), Point(0.2, 0.4), Point(0.3, 0.2)};
+
 
 Mesh::Mesh(MeshType meshType)
 {
@@ -99,24 +101,34 @@ void Mesh::OnDraw(Context *cr)
     Rect mysize = GetInteriorSize();
     uint16_t x = mysize.GetWidth(), y = mysize.GetHeight();
     uint16_t s = x < y ? x : y;
-    Point center = Point(s * 0.5, s * 0.5);
+    Point center = Point(x * 0.5, y * 0.5);
 
-    Point pts[5];
+    Point pts[12];
     switch (m_meshType)
     {
         case MeshType::Player:
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 12; i++) {
                 pts[i] = RotatePoint(center, m_meshPlayer[i] * Point(x, y), m_rotation);
             }
-            cr->Polyline(5, pts);
             break;
         
         case MeshType::Asteroid1:
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 12; i++) {
                 pts[i] = RotatePoint(center, m_meshAsteroid1[i] * Point(x, y), m_rotation);
             }
-            cr->Polyline(5, pts);
+            break;
+        
+        case MeshType::Asteroid2:
+            for (int i = 0; i < 12; i++) {
+                pts[i] = RotatePoint(center, m_meshAsteroid2[i] * Point(x, y), m_rotation);
+            }
+            break;
+
+        case MeshType::Asteroid3:
+            for (int i = 0; i < 12; i++) {
+                pts[i] = RotatePoint(center, m_meshAsteroid3[i] * Point(x, y), m_rotation);
+            }
             break;
     }
-    
+    cr->Polyline(12, pts);
 }
