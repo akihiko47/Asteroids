@@ -4,8 +4,8 @@
 #include <cmath>
 
 int Mesh::m_meshLength[] =      {5, 5, 4};
-Point Mesh::m_meshPlayer[] =    {Point(5, 23), Point(15, 3), Point(25, 23), Point(15, 18), Point(5, 23)};
-Point Mesh::m_meshAsteroid1[] = {Point(5, 25), Point(5, 5), Point(25, 5), Point(25, 25), Point(5, 25)};
+Point Mesh::m_meshPlayer[] =    {Point(0.25, 0.8), Point(0.5, 0.2), Point(0.75, 0.8), Point(0.5, 0.7), Point(0.25, 0.8)};
+Point Mesh::m_meshAsteroid1[] = {Point(0.2, 0.8), Point(0.2, 0.2), Point(0.8, 0.2), Point(0.8, 0.8), Point(0.2, 0.8)};
 
 Mesh::Mesh(MeshType meshType)
 {
@@ -14,6 +14,7 @@ Mesh::Mesh(MeshType meshType)
     m_rotation = 0.0;
     m_Color = RGB(1,1,1);
     m_thickness = 1.0;
+    m_active = true;
 }
 
 Mesh::~Mesh()
@@ -57,6 +58,16 @@ void Mesh::SetMeshType(MeshType meshType) {
     m_meshType = meshType;
 }
 
+bool Mesh::GetActive()
+{
+    return m_active;
+}
+
+void Mesh::SetActive(bool state)
+{
+    m_active = state;
+}
+
 Point Mesh::RotatePoint(const Point &o, const Point &p, double phi) {
     double s = sin(phi);
     double c = cos(phi);
@@ -76,7 +87,12 @@ Point Mesh::RotatePoint(const Point &o, const Point &p, double phi) {
 }
 
 void Mesh::OnDraw(Context *cr)
-{
+{   
+    if (!m_active)
+    {
+        return;
+    }
+
     cr->SetColor(m_Color);
     cr->SetLineWidth(m_thickness);
 
@@ -90,14 +106,14 @@ void Mesh::OnDraw(Context *cr)
     {
         case MeshType::Player:
             for (int i = 0; i < 5; i++) {
-                pts[i] = RotatePoint(center, m_meshPlayer[i], m_rotation);
+                pts[i] = RotatePoint(center, m_meshPlayer[i] * Point(x, y), m_rotation);
             }
             cr->Polyline(5, pts);
             break;
         
         case MeshType::Asteroid1:
             for (int i = 0; i < 5; i++) {
-                pts[i] = RotatePoint(center, m_meshAsteroid1[i], m_rotation);
+                pts[i] = RotatePoint(center, m_meshAsteroid1[i] * Point(x, y), m_rotation);
             }
             cr->Polyline(5, pts);
             break;

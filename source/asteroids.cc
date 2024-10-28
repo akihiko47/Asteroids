@@ -1,3 +1,4 @@
+#include <vector>
 #include <cmath>
 #include <ctime>
 #include <iostream>
@@ -39,6 +40,7 @@ public:
     bool OnTimeout();
     void AdjustControls();
     void SetScore();
+    void SetHealth();
 
 private:
     RGB         m_foreground;
@@ -46,8 +48,16 @@ private:
     uint32_t m_totalFrames;
     float m_dt;
 
+    // показатели здоровья игрока
+    Mesh *hp1;
+    Mesh *hp2;
+    Mesh *hp3;
+
+    // игрок
     Player *m_player;
-    Asteroid *m_asteroid;
+
+    // астероиды
+    std::vector<Asteroid*> m_asteroids;
 };
 
 void MainWindow::OnDraw(Context *cr)
@@ -90,12 +100,27 @@ void MainWindow::OnCreate()
     float m_dt = 1.0 / FPS;
 
     // Игрок
-    m_player = new Player(this, Point(400, 400), Rect(30, 30), 15, MeshType::Player);
+    m_player = new Player(this, Point(400, 400), Rect(40, 40), 15, MeshType::Player);
+    m_player->SetDrag(0.99);
+
+    // Показатели здоровья
+    hp1 = new Mesh(MeshType::Player);
+    AddChild(hp1, pt + Point(-7, 55), Rect(35, 35));
+
+    hp2 = new Mesh(MeshType::Player);
+    AddChild(hp2, pt + Point(23, 55), Rect(35, 35));
+
+    hp3 = new Mesh(MeshType::Player);
+    AddChild(hp3, pt + Point(53, 55), Rect(35, 35));
 
     // Астероиды
-    m_asteroid = new Asteroid(this, Point(200, 200), Rect(30, 30), 15, MeshType::Asteroid1);
-    m_asteroid->SetDrag(1.0);
-    m_asteroid->SetVelocity(Point(70.0, 100.0));
+    for (int i = 0; i < 10; i++)
+    {   
+        int randS = rand()%30 + 30;
+        Asteroid *asteroid = new Asteroid(this, Point(80 * i, 0), Rect(randS, randS), randS * 0.5, MeshType::Asteroid1);    
+        asteroid->SetVelocity(Point(std::rand() % 200 - 100, std::rand() % 200 - 100));
+        m_asteroids.push_back(asteroid);
+    }
 }
 
 void MainWindow::OnSizeChanged()
@@ -130,14 +155,23 @@ bool MainWindow::OnTimeout()
     m_player->Update(DT);
 
     // Обновить астероиды
-    m_asteroid->Update(DT);
-    m_asteroid->Rotate(0.01);
+    for (int i = 0; i < m_asteroids.size(); i++)
+    {
+        m_asteroids[i]->Update(DT);
+        m_asteroids[i]->Rotate(0.02 * -(i % 2 == 0));
+    }
 
     // Просчитать столкновения
-    GameObject *asteroids[] = {m_asteroid};
-    m_player->EvaluateCollisions(asteroids, 1);
+    GameObject *asteroids[m_asteroids.size()];
+    for (int i = 0; i < m_asteroids.size(); i++)
+    {
+       asteroids[i] = m_asteroids[i];
+    }
+    m_player->EvaluateCollisions(asteroids, m_asteroids.size());
 
+    // Обновить данные на экране
 	SetScore();
+    SetHealth();
 	ReDraw();
     return true;
 }
@@ -159,6 +193,24 @@ void MainWindow::SetScore()
         fps3->SetDigit(getDigitAtPos(m_totalFrames, 2));
     } else {
         fps3->SetDigit(getDigitAtPos(m_totalFrames, 1));
+    }
+}
+
+void MainWindow::SetHealth()
+{
+    if (m_player->GetHealth() == 3)
+    {
+        hp1->SetActive(false);
+    }
+
+    if (m_player->GetHealth() == 2)
+    {
+        hp2->SetActive(false);
+    }
+
+    if (m_player->GetHealth() == 1)
+    {
+        hp3->SetActive(false);
     }
 }
 

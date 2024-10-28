@@ -1,3 +1,9 @@
+enum class GameObjectType {
+    Player,
+    Asteroid,
+    Bullet
+};
+
 class GameObject
 {
 public:
@@ -5,7 +11,8 @@ public:
     virtual ~GameObject();
 
     virtual void Update(double dt);
-    virtual void OnCollision(GameObject *hit);
+    virtual void OnCollision(GameObject *hit) = 0;
+    virtual GameObjectType GetType() = 0;
 
     void   EvaluateCollisions(GameObject *objects[] , int n);
     double GetRotation();

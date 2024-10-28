@@ -17,7 +17,7 @@ GameObject::GameObject(Window *parent, const Point &pos, const Rect &size, doubl
     m_velocity = Point(0, 0);
     m_forward = Point(0, -1);
     m_rotation = 0.0;
-    m_drag = 0.99;
+    m_drag = 1.0;
     m_radius = rad;
 }
 

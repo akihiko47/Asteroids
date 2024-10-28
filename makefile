@@ -1,7 +1,7 @@
 # gui3
 LIB = libgui3.a
 SRCS = button.cc edit.cc GUI.cc image.cc list.cc scroll.cc text.cc window.cc mesh.cc gameobject.cc
-HEADERS = button.h context.h edit.h GUI.h image.h list.h mytypes.h scroll.h text.h window.h mesh.h gameobject.h
+HEADERS = button.h context.h edit.h GUI.h image.h list.h mytypes.h scroll.h text.h window.h mesh.h gameobject.h gameobjects.h
 OBJS = $(addprefix obj/,$(SRCS:.cc=.o))
 CC = g++
 CFLAGS = -g `pkg-config --cflags gtk+-3.0` -std=c++11

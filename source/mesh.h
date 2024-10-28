@@ -18,6 +18,8 @@ public:
     void   SetThickness(double thickness);
     double GetRotation();
     void   SetRotation(double phi);
+    bool   GetActive();
+    void   SetActive(bool state);                                    // Включение и отключение отрисовки
     Point  RotatePoint(const Point &o, const Point &p, double phi);  // Вращение точки p вокруг точки o на градус phi (рад)
 
     MeshType GetMeshType();
@@ -30,6 +32,7 @@ private:
     double m_thickness;
     double m_rotation;
     bool   m_fill;
+    bool   m_active;
 
     static int   m_meshLength[];
     static Point m_meshPlayer[];
