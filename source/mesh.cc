@@ -3,9 +3,9 @@
 #include <iostream>
 #include <cmath>
 
-int Mesh::m_meshLength[] = {5, 4, 4};
-Point Mesh::m_meshPlayer[] = {Point(5, 23), Point(15, 3), Point(25, 23), Point(15, 18), Point(5, 23)};
-
+int Mesh::m_meshLength[] =      {5, 5, 4};
+Point Mesh::m_meshPlayer[] =    {Point(5, 23), Point(15, 3), Point(25, 23), Point(15, 18), Point(5, 23)};
+Point Mesh::m_meshAsteroid1[] = {Point(5, 25), Point(5, 5), Point(25, 5), Point(25, 25), Point(5, 25)};
 
 Mesh::Mesh(MeshType meshType)
 {
@@ -85,12 +85,19 @@ void Mesh::OnDraw(Context *cr)
     uint16_t s = x < y ? x : y;
     Point center = Point(s * 0.5, s * 0.5);
 
+    Point pts[5];
     switch (m_meshType)
     {
         case MeshType::Player:
-            Point pts[5];
             for (int i = 0; i < 5; i++) {
                 pts[i] = RotatePoint(center, m_meshPlayer[i], m_rotation);
+            }
+            cr->Polyline(5, pts);
+            break;
+        
+        case MeshType::Asteroid1:
+            for (int i = 0; i < 5; i++) {
+                pts[i] = RotatePoint(center, m_meshAsteroid1[i], m_rotation);
             }
             cr->Polyline(5, pts);
             break;

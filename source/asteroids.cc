@@ -6,7 +6,7 @@
 #include "window.h"
 #include "digit7.h"
 #include "mesh.h"
-#include "gameobject.h"
+#include "gameobjects.h"
 #include "GUI.h"
 
 #define GAP 20
@@ -24,7 +24,6 @@ int getDigitAtPos(int number, int pos)
     } else {
         return 0;
     }
-    
 }
 
 class MainWindow : public Window
@@ -47,13 +46,12 @@ private:
     uint32_t m_totalFrames;
     float m_dt;
 
-    GameObject *m_player;
+    Player *m_player;
+    Asteroid *m_asteroid;
 };
 
 void MainWindow::OnDraw(Context *cr)
 {
-	std::cout << "MainWindow::OnDraw()" << std::endl;
-
     // зальем прямоугольник окна цветом фона
     cr->SetColor(m_backColor);
     cr->FillRectangle(Point(0,0), GetInteriorSize());
@@ -92,7 +90,12 @@ void MainWindow::OnCreate()
     float m_dt = 1.0 / FPS;
 
     // Игрок
-    m_player = new GameObject(this, Point(400, 400), Rect(30, 30), MeshType::Player);
+    m_player = new Player(this, Point(400, 400), Rect(30, 30), 15, MeshType::Player);
+
+    // Астероиды
+    m_asteroid = new Asteroid(this, Point(200, 200), Rect(30, 30), 15, MeshType::Asteroid1);
+    m_asteroid->SetDrag(1.0);
+    m_asteroid->SetVelocity(Point(70.0, 100.0));
 }
 
 void MainWindow::OnSizeChanged()
@@ -121,13 +124,18 @@ bool MainWindow::OnKeyPress(uint64_t keyval)
 
 bool MainWindow::OnTimeout()
 {
-	std::cout << "MainWindow::OnTimeout()" << std::endl;
     m_totalFrames++;
 
+    // Обновить игрока
     m_player->Update(DT);
 
-    std::cout << m_player->GetForward().GetX() << " " << m_player->GetForward().GetY() << "\n";
-    std::cout << m_player->GetPosition().GetX() << " " << m_player->GetPosition().GetY() << "\n";
+    // Обновить астероиды
+    m_asteroid->Update(DT);
+    m_asteroid->Rotate(0.01);
+
+    // Просчитать столкновения
+    GameObject *asteroids[] = {m_asteroid};
+    m_player->EvaluateCollisions(asteroids, 1);
 
 	SetScore();
 	ReDraw();

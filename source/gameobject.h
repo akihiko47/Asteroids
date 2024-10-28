@@ -1,11 +1,13 @@
 class GameObject
 {
 public:
-    GameObject(Window *parent, const Point &pos, const Rect &size, MeshType meshType);
-    ~GameObject();
+    GameObject(Window *parent, const Point &pos, const Rect &size, double rad, MeshType meshType);
+    virtual ~GameObject();
 
-    void Update(double dt);
+    virtual void Update(double dt);
+    virtual void OnCollision(GameObject *hit);
 
+    void   EvaluateCollisions(GameObject *objects[] , int n);
     double GetRotation();
     void   SetRotation(double phi);
     void   Rotate(double dphi);
@@ -16,6 +18,8 @@ public:
     Point  GetForward();
     double GetDrag();
     void   SetDrag(double drag);
+    double GetRadius();
+    void   SetRadius(double rad);
     
 private:
     Mesh  *m_mesh;
@@ -25,6 +29,8 @@ private:
     Point m_forward;
     double m_rotation;
     double m_drag;
+
+    double m_radius;  // для расчета столкновений
 
     Point m_borders;  // границы экрана по x и y
 };

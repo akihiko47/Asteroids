@@ -4,7 +4,8 @@
 #include <iostream>
 #include <cmath>
 
-GameObject::GameObject(Window *parent, const Point &pos, const Rect &size, MeshType meshType)
+
+GameObject::GameObject(Window *parent, const Point &pos, const Rect &size, double rad, MeshType meshType)
 {
     m_mesh = new Mesh(meshType);
     Point meshPos = Point(pos.GetX() - m_mesh->GetSize().GetWidth() * 0.5, pos.GetY() - m_mesh->GetSize().GetHeight() * 0.5);
@@ -17,6 +18,7 @@ GameObject::GameObject(Window *parent, const Point &pos, const Rect &size, MeshT
     m_forward = Point(0, -1);
     m_rotation = 0.0;
     m_drag = 0.99;
+    m_radius = rad;
 }
 
 GameObject::~GameObject()
@@ -71,6 +73,31 @@ double GameObject::GetDrag()
 void GameObject::SetDrag(double drag) 
 {
     m_drag = drag;
+}
+
+double GameObject::GetRadius()
+{
+    return m_radius;
+}
+
+void GameObject::SetRadius(double rad)
+{
+    m_radius = rad;
+}
+
+void GameObject::OnCollision(GameObject *hit)
+{
+}
+
+void GameObject::EvaluateCollisions(GameObject *objects[], int n) {
+    for (int i = 0; i < n; i++) {
+        GameObject *obj = objects[i];
+        double dist = sqrt(pow(m_position.GetX() - obj->GetPosition().GetX(), 2.0) + pow(m_position.GetY() - obj->GetPosition().GetY(), 2.0));
+        if (dist <= m_radius + obj->GetRadius()) {
+            OnCollision(obj);
+            obj->OnCollision(this);
+        }
+    }
 }
 
 void GameObject::Update(double dt)

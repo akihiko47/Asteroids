@@ -33,4 +33,5 @@ private:
 
     static int   m_meshLength[];
     static Point m_meshPlayer[];
+    static Point m_meshAsteroid1[];
 };
