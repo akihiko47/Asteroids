@@ -16,14 +16,14 @@ public:
 
     RGB    GetColor();
     void   SetColor(RGB Color);
-    double GetThickness();
+    double GetThickness()  const;
     void   SetThickness(double thickness);
-    double GetRotation();
+    double GetRotation()   const;
     void   SetRotation(double phi);
-    bool   GetActive();
+    bool   GetActive()     const;
     void   SetActive(bool state);                                    // Включение и отключение отрисовки
 
-    MeshType GetMeshType();
+    MeshType GetMeshType() const;
     void     SetMeshType(MeshType meshType);
 
     static Point RotatePoint(const Point &o, const Point &p, double phi);  // Вращение точки p вокруг точки o на градус phi (рад)

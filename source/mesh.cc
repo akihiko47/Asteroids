@@ -34,7 +34,7 @@ void Mesh::SetColor(RGB color) {
     m_Color = color;
 }
 
-double Mesh::GetThickness()
+double Mesh::GetThickness() const
 {
     return m_thickness;
 }
@@ -44,7 +44,7 @@ void Mesh::SetThickness(double thickness)
     m_thickness = thickness;
 }
 
-double Mesh::GetRotation()
+double Mesh::GetRotation() const
 {
     return m_rotation;
 }
@@ -54,15 +54,17 @@ void Mesh::SetRotation(double phi)
     m_rotation = phi;
 }
 
-MeshType Mesh::GetMeshType() {
+MeshType Mesh::GetMeshType() const
+{
     return m_meshType;
 }
 
-void Mesh::SetMeshType(MeshType meshType) {
+void Mesh::SetMeshType(MeshType meshType)
+{
     m_meshType = meshType;
 }
 
-bool Mesh::GetActive()
+bool Mesh::GetActive() const
 {
     return m_active;
 }
