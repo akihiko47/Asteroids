@@ -1,8 +1,14 @@
 #include "gameobject.h"
 #include <iostream>
-
+#include <cmath>
 
 #define BULLET_LIFETIME 5
+
+enum GameEvents
+{
+    AsteroidDestroyed,
+    PlayerHit
+};
 
 class Player : public GameObject
 {
@@ -29,6 +35,11 @@ public:
 
             m_canTakeDamage = false;
             m_timeSinceLastHit = 0.0;
+
+            if (hit->GetMesh())
+            {
+                hit->DeleteMesh();
+            }
         }
     }
 
@@ -67,6 +78,12 @@ public:
     GameObjectType GetType() const {return GameObjectType::Asteroid;}
 
     void OnCollision(GameObject *hit) {}
+
+    void Update(double dt)
+    {
+        GameObject::Update(dt);
+        Rotate(0.04 * (fmod(GetRadius(), 1.0) > 0.5 ? 1 : -1));
+    }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,7 +99,22 @@ public:
 
     GameObjectType GetType() const {return GameObjectType::Bullet;}
 
-    void OnCollision(GameObject *hit) {}
+    void OnScreenLeft()
+    {
+        if (GetMesh())
+        {
+            DeleteMesh();
+        }
+    }
+
+    void OnCollision(GameObject *hit)
+    {
+        if (hit->GetType() == GameObjectType::Asteroid && GetMesh()) {
+            GetMesh()->NotifyParent(GameEvents::AsteroidDestroyed, hit->GetPosition());
+            hit->DeleteMesh();
+            DeleteMesh();
+        }
+    }
 
     void Update(double dt)
     {   

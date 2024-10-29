@@ -14,6 +14,7 @@ public:
     virtual void           Update(double dt);
     virtual void           OnCollision(GameObject *hit) = 0;
     virtual GameObjectType GetType() const = 0;
+    virtual void           OnScreenLeft();
 
     Mesh*  GetMesh()     const;
     void   DeleteMesh();

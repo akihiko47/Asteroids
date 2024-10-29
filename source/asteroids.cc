@@ -44,9 +44,11 @@ public:
     void SetScore();
     void SetHealth();
 
+    void OnNotify(Window *child, uint32_t type, const Point &position);
+
 private:
     RGB       m_foreground;
-    uint32_t  m_totalFrames;
+    uint32_t  m_score;
     float     m_dt;
     Digit7   *num1, *num2, *num3;         // показатели счета
     Mesh     *hp1, *hp2, *hp3;            // показатели здоровья игрока
@@ -91,7 +93,7 @@ void MainWindow::OnCreate()
     CaptureKeyboard(this);
 
     // fps
-    m_totalFrames = 0;
+    m_score = 0;
     float m_dt = 1.0 / FPS;
 
     // Игрок
@@ -145,8 +147,6 @@ bool MainWindow::OnKeyPress(uint64_t keyval)
 
 bool MainWindow::OnTimeout()
 {
-    m_totalFrames++;
-
     // Обновить игрока
     m_player->Update(DT);
 
@@ -154,18 +154,19 @@ bool MainWindow::OnTimeout()
     for (int i = 0; i < m_asteroids.size(); i++)
     {
         m_asteroids[i]->Update(DT);
-        m_asteroids[i]->Rotate(0.02 * -(i % 2 == 0));
+
+        if (!m_asteroids[i]->GetMesh())
+        {
+            delete m_asteroids[i];
+            m_asteroids.erase(m_asteroids.begin() + i);
+        }
     }
 
     // Обновить пули
-    std::cout << "Bullets amount: " << m_bullets.size() << "\n";
     for (int i = 0; i < m_bullets.size(); i++)
     {
-        if (m_bullets[i]->GetMesh())
-        {
-            m_bullets[i]->Update(DT);
-        }
-        else
+        m_bullets[i]->Update(DT);
+        if (!m_bullets[i]->GetMesh())
         {
             delete m_bullets[i];
             m_bullets.erase(m_bullets.begin() + i);
@@ -180,6 +181,11 @@ bool MainWindow::OnTimeout()
        asteroids[i] = m_asteroids[i];
     }
     m_player->EvaluateCollisions(asteroids, m_asteroids.size());
+
+    for (int i = 0; i < m_bullets.size(); i++)
+    {
+        m_bullets[i]->EvaluateCollisions(asteroids, m_asteroids.size());
+    }
 
     // Обновить данные на экране
 	SetScore();
@@ -201,19 +207,19 @@ void MainWindow::SetScore()
 {
 	time_t ct = time(NULL);
     struct tm *t = localtime(&ct);
-    if (m_totalFrames >= 1000) {
+    if (m_score >= 1000) {
         num1->SetDigit(9);
         num2->SetDigit(9);
         num3->SetDigit(9);
-    } else if (m_totalFrames >= 100) {
-        num1->SetDigit(getDigitAtPos(m_totalFrames, 1));
-        num2->SetDigit(getDigitAtPos(m_totalFrames, 2));
-        num3->SetDigit(getDigitAtPos(m_totalFrames, 3));
-    } else if (m_totalFrames >= 10) {
-        num2->SetDigit(getDigitAtPos(m_totalFrames, 1));
-        num3->SetDigit(getDigitAtPos(m_totalFrames, 2));
+    } else if (m_score >= 100) {
+        num1->SetDigit(getDigitAtPos(m_score, 1));
+        num2->SetDigit(getDigitAtPos(m_score, 2));
+        num3->SetDigit(getDigitAtPos(m_score, 3));
+    } else if (m_score >= 10) {
+        num2->SetDigit(getDigitAtPos(m_score, 1));
+        num3->SetDigit(getDigitAtPos(m_score, 2));
     } else {
-        num3->SetDigit(getDigitAtPos(m_totalFrames, 1));
+        num3->SetDigit(getDigitAtPos(m_score, 1));
     }
 }
 
@@ -232,6 +238,16 @@ void MainWindow::SetHealth()
     if (m_player->GetHealth() == 1)
     {
         hp3->SetActive(false);
+    }
+}
+
+void MainWindow::OnNotify(Window *child, uint32_t type, const Point &position)
+{
+    switch (type)
+    {
+    case GameEvents::AsteroidDestroyed:
+        m_score += 5;
+        break;
     }
 }
 

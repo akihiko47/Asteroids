@@ -23,6 +23,7 @@ GameObject::GameObject(Window *parent, const Point &pos, const Rect &size, doubl
 
 GameObject::~GameObject()
 {
+    if (GetMesh()) {DeleteMesh();}
 }
 
 Mesh* GameObject::GetMesh() const
@@ -100,6 +101,26 @@ void GameObject::OnCollision(GameObject *hit)
 {
 }
 
+void GameObject::OnScreenLeft()
+{
+    if (m_position.GetX() < 0)
+    {
+        m_position.SetX(m_borders.GetX());
+    }
+    else if (m_position.GetX() > m_borders.GetX()) 
+    {
+        m_position.SetX(0);
+    }
+    else if (m_position.GetY() < 0)
+    {
+        m_position.SetY(m_borders.GetY());
+    }
+    else if (m_position.GetY() > m_borders.GetY())
+    {
+        m_position.SetY(0);
+    }
+}
+
 void GameObject::EvaluateCollisions(GameObject *objects[], int n) {
     for (int i = 0; i < n; i++) {
         GameObject *obj = objects[i];
@@ -131,22 +152,16 @@ void GameObject::Update(double dt)
     // Применить трение
     m_velocity = m_velocity * Point(m_drag, m_drag);
 
-    // Проверить границы экрана
-    if (m_position.GetX() < 0)
+    // Обновить границы экрана
+    if (GetMesh())
     {
-        m_position.SetX(m_borders.GetX());
-    }
-    else if (m_position.GetX() > m_borders.GetX()) 
-    {
-        m_position.SetX(0);
-    }
-    else if (m_position.GetY() < 0)
-    {
-        m_position.SetY(m_borders.GetY());
-    }
-    else if (m_position.GetY() > m_borders.GetY())
-    {
-        m_position.SetY(0);
+        Rect r = GetMesh()->GetParent()->GetSize();
+        m_borders = Point(r.GetWidth(), r.GetHeight());
     }
 
+    // Проверить нахождение внутри границ экрана
+    if (m_position.GetX() < 0 || m_position.GetX() > m_borders.GetX() || m_position.GetY() < 0 || m_position.GetY() > m_borders.GetY())
+    {
+        OnScreenLeft();
+    }
 }
