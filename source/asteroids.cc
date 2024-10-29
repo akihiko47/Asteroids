@@ -15,6 +15,7 @@
 #define DT 1.0 / FPS
 
 #define PLAYER_SPEED 150
+#define BULLET_SPEED 200
 
 int getDigitAtPos(int number, int pos)
 {
@@ -37,27 +38,21 @@ public:
     void OnDraw(Context *cr);
     void OnSizeChanged();
     bool OnKeyPress(uint64_t value);
+    bool OnLeftMouseButtonClick(const Point &Position);
     bool OnTimeout();
     void AdjustControls();
     void SetScore();
     void SetHealth();
 
 private:
-    RGB         m_foreground;
-    uint32_t m_totalFrames;
-    float m_dt;
-
-    // показатели счета
-    Digit7 *num1, *num2, *num3;
-
-    // показатели здоровья игрока
-    Mesh *hp1, *hp2, *hp3;
-
-    // игрок
-    Player *m_player;
-
-    // астероиды
-    std::vector<Asteroid*> m_asteroids;
+    RGB       m_foreground;
+    uint32_t  m_totalFrames;
+    float     m_dt;
+    Digit7   *num1, *num2, *num3;         // показатели счета
+    Mesh     *hp1, *hp2, *hp3;            // показатели здоровья игрока
+    Player   *m_player;                   // игрок
+    std::vector<Asteroid*> m_asteroids;   // астероиды
+    std::vector<Bullet*>   m_bullets;     // пули
 };
 
 void MainWindow::OnDraw(Context *cr)
@@ -162,6 +157,22 @@ bool MainWindow::OnTimeout()
         m_asteroids[i]->Rotate(0.02 * -(i % 2 == 0));
     }
 
+    // Обновить пули
+    std::cout << "Bullets amount: " << m_bullets.size() << "\n";
+    for (int i = 0; i < m_bullets.size(); i++)
+    {
+        if (m_bullets[i]->GetMesh())
+        {
+            m_bullets[i]->Update(DT);
+        }
+        else
+        {
+            delete m_bullets[i];
+            m_bullets.erase(m_bullets.begin() + i);
+        }
+        
+    }
+
     // Просчитать столкновения
     GameObject *asteroids[m_asteroids.size()];
     for (int i = 0; i < m_asteroids.size(); i++)
@@ -174,6 +185,15 @@ bool MainWindow::OnTimeout()
 	SetScore();
     SetHealth();
 	ReDraw();
+    CaptureKeyboard(this);
+    return true;
+}
+
+bool MainWindow::OnLeftMouseButtonClick(const Point &Position)
+{  
+    Bullet *bullet = new Bullet(this, m_player->GetPosition(), Rect(10, 10), 5.0, MeshType::Bullet);
+    bullet->SetVelocity(m_player->GetForward() * Point(200, 200));
+    m_bullets.push_back(bullet);
     return true;
 }
 

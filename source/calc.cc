@@ -149,6 +149,8 @@ void MainWindow::OnNotify(Window *child, uint32_t type, const Point &position)
     case EVENT_0:
     case EVENT_1:
     case EVENT_2:
+        DeleteChild(child);
+        break;
     case EVENT_3:
     case EVENT_4:
     case EVENT_5:

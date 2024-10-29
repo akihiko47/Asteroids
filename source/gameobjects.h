@@ -2,22 +2,20 @@
 #include <iostream>
 
 
+#define BULLET_LIFETIME 5
+
 class Player : public GameObject
 {
 public:
-    Player(Window *parent, const Point &pos, const Rect &size, double rad, MeshType meshType) : GameObject(parent, pos, size, rad, meshType)
-    {
-        m_health           = 4;
-        m_hitCooldown      = 2.0;
-        m_timeSinceLastHit = 0.0;
-        m_canTakeDamage    = true;
-    }
+    Player(Window *parent, const Point &pos, const Rect &size, double rad, MeshType meshType) : 
+        GameObject(parent, pos, size, rad, meshType),
+        m_health(4),
+        m_hitCooldown(2),
+        m_timeSinceLastHit(0),
+        m_canTakeDamage(true) {}
     ~Player() {}
 
-    GameObjectType GetType() 
-    {
-        return GameObjectType::Player;
-    }
+    GameObjectType GetType() const {return GameObjectType::Player;}
 
     void OnCollision(GameObject *hit)
     {
@@ -48,10 +46,7 @@ public:
         }
     }
 
-    int GetHealth()
-    {
-        return m_health;
-    }
+    int GetHealth() const {return m_health;}
 
 private:
     int    m_health;            // здоровье игрока
@@ -60,20 +55,47 @@ private:
     bool   m_canTakeDamage;     // может ли игрок получать урон
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class Asteroid : public GameObject
 {
 public:
-    Asteroid(Window *parent, const Point &pos, const Rect &size, double rad, MeshType meshType) : GameObject(parent, pos, size, rad, meshType) {}
+    Asteroid(Window *parent, const Point &pos, const Rect &size, double rad, MeshType meshType) : 
+        GameObject(parent, pos, size, rad, meshType) {}
     ~Asteroid() {}
 
-    GameObjectType GetType() 
-    {
-        return GameObjectType::Asteroid;
+    GameObjectType GetType() const {return GameObjectType::Asteroid;}
+
+    void OnCollision(GameObject *hit) {}
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class Bullet : public GameObject
+{
+public:
+    Bullet(Window *parent, const Point &pos, const Rect &size, double rad, MeshType meshType) :
+        GameObject(parent, pos, size, rad, meshType),
+        m_maxLifeTime(BULLET_LIFETIME),
+        m_lifetime(0) {}
+    ~Bullet() {}
+
+    GameObjectType GetType() const {return GameObjectType::Bullet;}
+
+    void OnCollision(GameObject *hit) {}
+
+    void Update(double dt)
+    {   
+        GameObject::Update(dt);
+
+        m_lifetime += dt;
+        if (m_lifetime >= m_maxLifeTime && GetMesh())
+        {
+            DeleteMesh();
+        }
     }
 
-    void OnCollision(GameObject *hit)
-    {
-        
-    }
+private:
+    double m_maxLifeTime;
+    double m_lifetime;
 };

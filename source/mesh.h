@@ -2,7 +2,8 @@ enum class MeshType {
     Player,
     Asteroid1,
     Asteroid2,
-    Asteroid3
+    Asteroid3,
+    Bullet
 };
 
 class Mesh : public Window
@@ -21,10 +22,11 @@ public:
     void   SetRotation(double phi);
     bool   GetActive();
     void   SetActive(bool state);                                    // Включение и отключение отрисовки
-    Point  RotatePoint(const Point &o, const Point &p, double phi);  // Вращение точки p вокруг точки o на градус phi (рад)
 
     MeshType GetMeshType();
     void     SetMeshType(MeshType meshType);
+
+    static Point RotatePoint(const Point &o, const Point &p, double phi);  // Вращение точки p вокруг точки o на градус phi (рад)
     
 private:
     MeshType m_meshType;
@@ -40,4 +42,5 @@ private:
     static Point m_meshAsteroid1[];
     static Point m_meshAsteroid2[];
     static Point m_meshAsteroid3[];
+    static Point m_meshBullet[];
 };

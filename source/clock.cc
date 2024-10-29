@@ -94,6 +94,10 @@ bool MainWindow::OnKeyPress(uint64_t keyval)
     {
         theGUI->Print();
     }
+    else if(keyval == 'e' && m_pHH != NULL)
+    {
+        DeleteChild(m_pHH);
+    }
     return true;
 }
 

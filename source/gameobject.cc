@@ -25,7 +25,18 @@ GameObject::~GameObject()
 {
 }
 
-double GameObject::GetRotation()
+Mesh* GameObject::GetMesh() const
+{
+    return m_mesh;
+}
+
+void GameObject::DeleteMesh()
+{
+    m_mesh->GetParent()->DeleteChild(m_mesh);
+    m_mesh = nullptr;
+}
+
+double GameObject::GetRotation() const
 {
     return m_rotation;
 }
@@ -40,7 +51,7 @@ void GameObject::Rotate(double dphi)
     m_rotation += dphi;
 }
 
-Point GameObject::GetPosition() 
+Point GameObject::GetPosition() const
 {
     return m_position;
 }
@@ -50,12 +61,12 @@ void GameObject::SetPosition(const Point &pos)
     m_position = pos;
 }
 
-Point GameObject::GetVelocity()
+Point GameObject::GetVelocity() const
 {
     return m_velocity;
 }
 
-Point GameObject::GetForward()
+Point GameObject::GetForward() const
 {
     return m_forward;
 }
@@ -65,7 +76,7 @@ void GameObject::SetVelocity(const Point &vel)
     m_velocity = vel;
 }
 
-double GameObject::GetDrag()
+double GameObject::GetDrag() const
 {
     return m_drag;
 }
@@ -75,7 +86,7 @@ void GameObject::SetDrag(double drag)
     m_drag = drag;
 }
 
-double GameObject::GetRadius()
+double GameObject::GetRadius() const
 {
     return m_radius;
 }
@@ -107,12 +118,15 @@ void GameObject::Update(double dt)
     m_position.SetY(m_position.GetY() + m_velocity.GetY() * dt);
 
     // Изменить вектор направления
-    m_forward = m_mesh->RotatePoint(Point(0, 0), Point(0, -1), m_rotation);
+    m_forward = Mesh::RotatePoint(Point(0, 0), Point(0, -1), m_rotation);
 
     // Изменить положение отображаемой модели
-    Point meshPos = Point(m_position.GetX() - m_mesh->GetSize().GetWidth() * 0.5, m_position.GetY() - m_mesh->GetSize().GetHeight() * 0.5);
-    m_mesh->SetPosition(meshPos);
-    m_mesh->SetRotation(m_rotation);
+    if (GetMesh())
+    {
+        Point meshPos = Point(m_position.GetX() - m_mesh->GetSize().GetWidth() * 0.5, m_position.GetY() - m_mesh->GetSize().GetHeight() * 0.5);
+        m_mesh->SetPosition(meshPos);
+        m_mesh->SetRotation(m_rotation);
+    }
 
     // Применить трение
     m_velocity = m_velocity * Point(m_drag, m_drag);

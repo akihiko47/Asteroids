@@ -3,11 +3,13 @@
 #include <iostream>
 #include <cmath>
 
-Point Mesh::m_meshPlayer[12] =    {Point(0.25, 0.8), Point(0.5, 0.2), Point(0.75, 0.8), Point(0.5, 0.7), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8)};
+// каждая модель состоит из 12 точек
+// если точек меньше, повторяем последнюю
+Point Mesh::m_meshPlayer[12]    = {Point(0.25, 0.8), Point(0.5, 0.2), Point(0.75, 0.8), Point(0.5, 0.7), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8), Point(0.25, 0.8)};
 Point Mesh::m_meshAsteroid1[12] = {Point(0.3, 0.4), Point(0.4, 0.2), Point(0.7, 0.2), Point(0.8, 0.5), Point(0.7, 0.8), Point(0.3, 0.8), Point(0.1, 0.5), Point(0.3, 0.4), Point(0.3, 0.4), Point(0.3, 0.4), Point(0.3, 0.4), Point(0.3, 0.4)};
 Point Mesh::m_meshAsteroid2[12] = {Point(0.3, 0.3), Point(0.4, 0.4), Point(0.5, 0.2), Point(0.7, 0.2), Point(0.8, 0.4), Point(0.8, 0.6), Point(0.7, 0.6), Point(0.6, 0.8), Point(0.3, 0.8), Point(0.2, 0.7), Point(0.2, 0.5), Point(0.3, 0.3)};
 Point Mesh::m_meshAsteroid3[12] = {Point(0.3, 0.2), Point(0.4, 0.2), Point(0.8, 0.4), Point(0.8, 0.5), Point(0.7, 0.6), Point(0.5, 0.6), Point(0.5, 0.7), Point(0.4, 0.8), Point(0.3, 0.8), Point(0.2, 0.6), Point(0.2, 0.4), Point(0.3, 0.2)};
-
+Point Mesh::m_meshBullet[12]    = {Point(0.4, 0.2), Point(0.6, 0.2), Point(0.8, 0.4), Point(0.8, 0.6), Point(0.6, 0.8), Point(0.4, 0.8), Point(0.2, 0.6), Point(0.2, 0.4), Point(0.4, 0.2), Point(0.4, 0.2), Point(0.4, 0.2), Point(0.4, 0.2)};
 
 Mesh::Mesh(MeshType meshType)
 {
@@ -103,32 +105,14 @@ void Mesh::OnDraw(Context *cr)
     uint16_t s = x < y ? x : y;
     Point center = Point(x * 0.5, y * 0.5);
 
-    Point pts[12];
-    switch (m_meshType)
-    {
-        case MeshType::Player:
-            for (int i = 0; i < 12; i++) {
-                pts[i] = RotatePoint(center, m_meshPlayer[i] * Point(x, y), m_rotation);
-            }
-            break;
-        
-        case MeshType::Asteroid1:
-            for (int i = 0; i < 12; i++) {
-                pts[i] = RotatePoint(center, m_meshAsteroid1[i] * Point(x, y), m_rotation);
-            }
-            break;
-        
-        case MeshType::Asteroid2:
-            for (int i = 0; i < 12; i++) {
-                pts[i] = RotatePoint(center, m_meshAsteroid2[i] * Point(x, y), m_rotation);
-            }
-            break;
+    const Point *meshArrays[] = {m_meshPlayer, m_meshAsteroid1, m_meshAsteroid2, m_meshAsteroid3, m_meshBullet}; // массив указателей на массивы точек
 
-        case MeshType::Asteroid3:
-            for (int i = 0; i < 12; i++) {
-                pts[i] = RotatePoint(center, m_meshAsteroid3[i] * Point(x, y), m_rotation);
-            }
-            break;
+    int index = static_cast<int>(m_meshType);
+
+    Point pts[12];
+    for (int i = 0; i < 12; i++) {
+        pts[i] = RotatePoint(center, meshArrays[index][i] * Point(x, y), m_rotation);
     }
+
     cr->Polyline(12, pts);
 }
