@@ -139,6 +139,17 @@ bool MainWindow::OnKeyPress(uint64_t keyval)
             m_player->SetVelocity(m_player->GetForward() * Point(PLAYER_SPEED, PLAYER_SPEED));
         }
         break;
+    
+    case GameState::End:
+        if (keyval == GDK_KEY_space)
+        {
+            CreateStartScreen();
+        }
+        else if (keyval == KEY_Esc)
+        {
+            DeleteMe();
+        }
+        break;
     }
     
     return true;
@@ -253,13 +264,17 @@ void MainWindow::CreateStartScreen()
     m_bullets.clear();
     m_asteroids.clear();
 
+    Rect mysize = GetInteriorSize();
+    uint16_t x = mysize.GetWidth(), y = mysize.GetHeight();
+
     // текст названия
     m_title = new Text("ASTEROIDS");
     m_title->SetTextColor(RGB(1, 1, 1));
     m_title->SetFont("Monospace", 80, 1, -1);
     m_title->SetAlignment(TEXT_ALIGNH_CENTER|TEXT_ALIGNV_CENTER);
     m_title->SetWrap(true);
-    AddChild(m_title, Point(150, 200),Rect(500, 70));
+    AddChild(m_title, Point((x - 500) * 0.5, (y - 70) * 0.2), Rect(500, 70));
+    
 
     // текст начала игры
     Text *text2 = new Text("PRESS SPACE TO START");
@@ -375,25 +390,27 @@ void MainWindow::CreateEndGameScreen()
     AddChild(text4, Point(0, 720),Rect(300, 50));
 
     // Счет
+    double xStart = (x - 350) * 0.5;
+
     num1 = new Digit7(0);
     num1->SetColor(m_foreground);
-    num1->SetGap(0.03);
-    AddChild(num1, Point(220, 250), Rect(50, 100));
+    num1->SetGap(0.05);
+    AddChild(num1, Point(xStart, 250), Rect(50, 100));
 
     num2 = new Digit7(0);
     num2->SetColor(m_foreground);
-    num2->SetGap(0.03);
-    AddChild(num2, Point(320, 250), Rect(50, 100));
+    num2->SetGap(0.05);
+    AddChild(num2, Point(xStart + 100, 250), Rect(50, 100));
 
     num3 = new Digit7(0);
     num3->SetColor(m_foreground);
-    num3->SetGap(0.03);
-    AddChild(num3, Point(420, 250), Rect(50, 100));
+    num3->SetGap(0.05);
+    AddChild(num3, Point(xStart + 200, 250), Rect(50, 100));
 
     num4 = new Digit7(0);
     num4->SetColor(m_foreground);
-    num4->SetGap(0.03);
-    AddChild(num4, Point(520, 250), Rect(50, 100));
+    num4->SetGap(0.05);
+    AddChild(num4, Point(xStart + 300, 250), Rect(50, 100));
     SetScore();
 }
 
