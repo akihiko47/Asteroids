@@ -128,6 +128,7 @@ void GameObject::EvaluateCollisions(GameObject *objects[], int n) {
         if (dist <= m_radius + obj->GetRadius()) {
             OnCollision(obj);
             obj->OnCollision(this);
+            break;
         }
     }
 }

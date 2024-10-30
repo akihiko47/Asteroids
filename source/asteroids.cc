@@ -9,13 +9,22 @@
 #include "mesh.h"
 #include "gameobjects.h"
 #include "GUI.h"
+#include "text.h"
 
 #define GAP 20
 #define FPS 30.0
-#define DT 1.0 / FPS
+#define DT  1.0 / FPS
 
-#define PLAYER_SPEED 150
-#define BULLET_SPEED 200
+#define PLAYER_SPEED      150
+#define BULLET_SPEED      350
+#define MIN_ASTEROID_SIZE 30
+
+enum GameState
+{
+    Start,
+    InGame,
+    End
+};
 
 int getDigitAtPos(int number, int pos)
 {
@@ -44,17 +53,24 @@ public:
     void SetScore();
     void SetHealth();
 
+    void CreateStartScreen();
+    void CreateGame();
+    void CreateEndGameScreen();
+
     void OnNotify(Window *child, uint32_t type, const Point &position);
 
 private:
     RGB       m_foreground;
     uint32_t  m_score;
     float     m_dt;
+
     Digit7   *num1, *num2, *num3;         // показатели счета
     Mesh     *hp1, *hp2, *hp3;            // показатели здоровья игрока
     Player   *m_player;                   // игрок
     std::vector<Asteroid*> m_asteroids;   // астероиды
     std::vector<Bullet*>   m_bullets;     // пули
+
+    GameState m_state;
 };
 
 void MainWindow::OnDraw(Context *cr)
@@ -69,6 +85,180 @@ void MainWindow::OnCreate()
     // начальные цвета
     m_foreground = RGB(1.0,1.0,1.0);
     SetBackColor(RGB(0.0, 0.0, 0.0));
+    SetFrameColor(RGB(1, 1, 1));
+
+    CreateStartScreen();
+
+    CaptureKeyboard(this);
+    CreateTimeout(this, 1000.0 / FPS);
+}
+
+void MainWindow::OnSizeChanged()
+{
+	std::cout << "MainWindow::OnSizeChanged()" << std::endl;
+}
+
+bool MainWindow::OnKeyPress(uint64_t keyval)
+{
+    switch(m_state)
+    {
+    case GameState::Start:
+        if(keyval ==  GDK_KEY_space)
+        {
+            CreateGame();
+        }
+        break;
+
+    case GameState::InGame:
+        if(keyval == 'a')
+        {
+            m_player->Rotate(-0.1);
+        }
+        else if(keyval == 'd')
+        {
+            m_player->Rotate(0.1);
+        }
+        else if (keyval == 'w') 
+        {
+            m_player->SetVelocity(m_player->GetForward() * Point(PLAYER_SPEED, PLAYER_SPEED));
+        }
+        break;
+    }
+    
+    return true;
+}
+
+bool MainWindow::OnTimeout()
+{
+    switch(m_state)
+    {
+    case GameState::Start:
+        // Обновить астероиды
+        for (int i = 0; i < m_asteroids.size(); i++)
+        {
+            m_asteroids[i]->Update(DT);
+        }
+
+        break;
+
+    case GameState::InGame:
+        // Обновить игрока
+        m_player->Update(DT);
+
+        // Обновить астероиды
+        for (int i = 0; i < m_asteroids.size(); i++)
+        {
+            if (!m_asteroids[i]->GetMesh())
+            {
+                delete m_asteroids[i];
+                m_asteroids.erase(m_asteroids.begin() + i);
+                continue;
+            }
+
+            m_asteroids[i]->Update(DT);
+        }
+
+        // Обновить пули
+        for (int i = 0; i < m_bullets.size(); i++)
+        {
+            m_bullets[i]->Update(DT);
+            if (!m_bullets[i]->GetMesh())
+            {
+                delete m_bullets[i];
+                m_bullets.erase(m_bullets.begin() + i);
+            }
+            
+        }
+
+        // Просчитать столкновения
+        int n = m_asteroids.size();
+        GameObject *asteroids[n];
+        for (int i = 0; i < n; i++)
+        {
+            asteroids[i] = m_asteroids[i];
+        }
+        m_player->EvaluateCollisions(asteroids, n);
+
+        for (int i = 0; i < m_bullets.size(); i++)
+        {
+            m_bullets[i]->EvaluateCollisions(asteroids, n);
+        }
+
+        // Обновить данные на экране
+        SetScore();
+        SetHealth();
+
+        break;
+    }
+   
+	ReDraw();
+    CaptureKeyboard(this);
+    return true;
+}
+
+bool MainWindow::OnLeftMouseButtonClick(const Point &Position)
+{  
+    switch(m_state)
+    {
+    case GameState::Start:
+        break;
+
+    case GameState::InGame:
+        Bullet *bullet = new Bullet(this, m_player->GetPosition(), Rect(10, 10), 5.0, MeshType::Bullet);
+        bullet->SetVelocity(m_player->GetForward() * Point(BULLET_SPEED, BULLET_SPEED));
+        m_bullets.push_back(bullet);
+
+        break;
+    }
+    return true;
+}
+
+void MainWindow::CreateStartScreen()
+{
+    m_state = GameState::Start;
+    DeleteAllChildren();
+    m_bullets.clear();
+    m_asteroids.clear();
+    SetFrameWidth(1);
+
+    // текст названия
+    Text *text1 = new Text("ASTEROIDS");
+    text1->SetTextColor(RGB(1, 1, 1));
+    text1->SetFont("Monospace", 80, 1, -1);
+    text1->SetAlignment(TEXT_ALIGNH_CENTER|TEXT_ALIGNV_CENTER);
+    text1->SetWrap(true);
+    text1->SetFrameWidth(1);
+    text1->SetFrameColor(RGB(1, 1, 1));
+    AddChild(text1, Point(0, 0),Rect(800, 200));
+
+    // текст начала игры
+    Text *text2 = new Text("PRESS SPACE TO START");
+    text2->SetTextColor(RGB(1, 1, 1));
+    text2->SetFont("Monospace", 40, 1, -1);
+    text2->SetAlignment(TEXT_ALIGNH_CENTER|TEXT_ALIGNV_CENTER);
+    text2->SetWrap(true);
+    text2->SetFrameWidth(1);
+    text2->SetFrameColor(RGB(1, 1, 1));
+    AddChild(text2, Point(0, 600),Rect(800, 200));
+
+    // Астероиды
+    for (int i = 0; i < 10; i++)
+    {   
+        MeshType meshes[] = {MeshType::Asteroid1, MeshType::Asteroid2, MeshType::Asteroid3};
+        int randS = rand()%50 + 50;
+        Asteroid *asteroid = new Asteroid(this, Point(80 * i, 0), Rect(randS, randS), randS * 0.4, meshes[i % 3]);    
+        asteroid->SetVelocity(Point(std::rand() % 200 - 100, std::rand() % 200 - 100));
+        m_asteroids.push_back(asteroid);
+    }
+}
+
+void MainWindow::CreateGame()
+{
+    m_state = GameState::InGame;
+    DeleteAllChildren();
+    m_bullets.clear();
+    m_asteroids.clear();
+    SetFrameWidth(0);
 
     Point pt(20,20);
     Rect r(20,40);
@@ -85,14 +275,7 @@ void MainWindow::OnCreate()
     num3->SetColor(m_foreground);
     AddChild(num3, pt + Point(60, 0), r);
 
-	// AdjustControls();
-	SetScore();
-    CreateTimeout(this, 1000.0 / FPS);
-
-    // фокус ввода
-    CaptureKeyboard(this);
-
-    // fps
+    // Счет
     m_score = 0;
     float m_dt = 1.0 / FPS;
 
@@ -114,93 +297,11 @@ void MainWindow::OnCreate()
     for (int i = 0; i < 10; i++)
     {   
         MeshType meshes[] = {MeshType::Asteroid1, MeshType::Asteroid2, MeshType::Asteroid3};
-        int randS = rand()%30 + 30;
+        int randS = rand()%50 + 50;
         Asteroid *asteroid = new Asteroid(this, Point(80 * i, 0), Rect(randS, randS), randS * 0.4, meshes[i % 3]);    
         asteroid->SetVelocity(Point(std::rand() % 200 - 100, std::rand() % 200 - 100));
         m_asteroids.push_back(asteroid);
     }
-}
-
-void MainWindow::OnSizeChanged()
-{
-	std::cout << "MainWindow::OnSizeChanged()" << std::endl;
-
-    // AdjustControls();
-}
-
-bool MainWindow::OnKeyPress(uint64_t keyval)
-{
-    if(keyval == 'a')
-    {
-        m_player->Rotate(-0.1);
-    }
-    else if(keyval == 'd')
-    {
-        m_player->Rotate(0.1);
-    }
-    else if (keyval == 'w') 
-    {
-        m_player->SetVelocity(m_player->GetForward() * Point(PLAYER_SPEED, PLAYER_SPEED));
-    }
-    return true;
-}
-
-bool MainWindow::OnTimeout()
-{
-    // Обновить игрока
-    m_player->Update(DT);
-
-    // Обновить астероиды
-    for (int i = 0; i < m_asteroids.size(); i++)
-    {
-        m_asteroids[i]->Update(DT);
-
-        if (!m_asteroids[i]->GetMesh())
-        {
-            delete m_asteroids[i];
-            m_asteroids.erase(m_asteroids.begin() + i);
-        }
-    }
-
-    // Обновить пули
-    for (int i = 0; i < m_bullets.size(); i++)
-    {
-        m_bullets[i]->Update(DT);
-        if (!m_bullets[i]->GetMesh())
-        {
-            delete m_bullets[i];
-            m_bullets.erase(m_bullets.begin() + i);
-        }
-        
-    }
-
-    // Просчитать столкновения
-    GameObject *asteroids[m_asteroids.size()];
-    for (int i = 0; i < m_asteroids.size(); i++)
-    {
-       asteroids[i] = m_asteroids[i];
-    }
-    m_player->EvaluateCollisions(asteroids, m_asteroids.size());
-
-    for (int i = 0; i < m_bullets.size(); i++)
-    {
-        m_bullets[i]->EvaluateCollisions(asteroids, m_asteroids.size());
-    }
-
-    // Обновить данные на экране
-	SetScore();
-    SetHealth();
-	ReDraw();
-    CaptureKeyboard(this);
-    return true;
-}
-
-bool MainWindow::OnLeftMouseButtonClick(const Point &Position)
-{  
-    Bullet *bullet = new Bullet(this, m_player->GetPosition(), Rect(10, 10), 5.0, MeshType::Bullet);
-    bullet->SetVelocity(m_player->GetForward() * Point(200, 200));
-    m_bullets.push_back(bullet);
-    return true;
 }
 
 void MainWindow::SetScore()
@@ -247,6 +348,20 @@ void MainWindow::OnNotify(Window *child, uint32_t type, const Point &position)
     {
     case GameEvents::AsteroidDestroyed:
         m_score += 5;
+        double s = child->GetSize().GetWidth();
+        double x = child->GetPosition().GetX() + s * 0.5;
+        double y = child->GetPosition().GetY() + s * 0.5;
+        double childSize = s * 0.7;
+        if (childSize > MIN_ASTEROID_SIZE)
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                MeshType meshes[] = {MeshType::Asteroid1, MeshType::Asteroid2, MeshType::Asteroid3};
+                Asteroid *asteroid = new Asteroid(this, Point(x, y), Rect(childSize, childSize), childSize * 0.4, meshes[((int)childSize + i) % 3]);    
+                asteroid->SetVelocity(Point(std::rand() % 200 - 100, std::rand() % 200 - 100));
+                m_asteroids.push_back(asteroid);
+            }
+        }
         break;
     }
 }

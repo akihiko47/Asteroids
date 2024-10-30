@@ -77,7 +77,13 @@ public:
 
     GameObjectType GetType() const {return GameObjectType::Asteroid;}
 
-    void OnCollision(GameObject *hit) {}
+    void OnCollision(GameObject *hit) {
+        if (hit->GetType() == GameObjectType::Bullet && GetMesh()) {
+            GetMesh()->NotifyParent(GameEvents::AsteroidDestroyed, GetPosition());
+            hit->DeleteMesh();
+            DeleteMesh();
+        }
+    }
 
     void Update(double dt)
     {
@@ -107,14 +113,7 @@ public:
         }
     }
 
-    void OnCollision(GameObject *hit)
-    {
-        if (hit->GetType() == GameObjectType::Asteroid && GetMesh()) {
-            GetMesh()->NotifyParent(GameEvents::AsteroidDestroyed, hit->GetPosition());
-            hit->DeleteMesh();
-            DeleteMesh();
-        }
-    }
+    void OnCollision(GameObject *hit) {}
 
     void Update(double dt)
     {   
