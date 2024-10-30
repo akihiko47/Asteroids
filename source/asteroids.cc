@@ -19,6 +19,10 @@
 #define BULLET_SPEED      350
 #define MIN_ASTEROID_SIZE 30
 
+#define BACK_COLOR   RGB(0.05, 0.05, 0.05)
+#define FORE_COLOR   RGB(1.00, 0.95, 0.94)
+#define PLAYER_COLOR RGB(1.00, 0.83, 0.80)
+
 enum GameState
 {
     Start,
@@ -62,13 +66,18 @@ public:
 private:
     RGB       m_foreground;
     uint32_t  m_score;
-    float     m_dt;
+    double    m_dt;
+    double    m_time;                     // прошедшее время с запуска окна
 
-    Digit7   *num1, *num2, *num3;         // показатели счета
+
+    Digit7   *num1, *num2, *num3, *num4;  // показатели счета
     Mesh     *hp1, *hp2, *hp3;            // показатели здоровья игрока
     Player   *m_player;                   // игрок
     std::vector<Asteroid*> m_asteroids;   // астероиды
     std::vector<Bullet*>   m_bullets;     // пули
+
+    Text *m_title;
+    Text *m_gameOver;
 
     GameState m_state;
 };
@@ -83,8 +92,8 @@ void MainWindow::OnDraw(Context *cr)
 void MainWindow::OnCreate()
 {
     // начальные цвета
-    m_foreground = RGB(1.0,1.0,1.0);
-    SetBackColor(RGB(0.0, 0.0, 0.0));
+    m_foreground = FORE_COLOR;
+    SetBackColor(BACK_COLOR);
     SetFrameColor(RGB(1, 1, 1));
 
     CreateStartScreen();
@@ -96,6 +105,13 @@ void MainWindow::OnCreate()
 void MainWindow::OnSizeChanged()
 {
 	std::cout << "MainWindow::OnSizeChanged()" << std::endl;
+    switch (m_state)
+    {
+    case GameState::Start:
+        Rect mysize = GetInteriorSize();
+        uint16_t x = mysize.GetWidth(), y = mysize.GetHeight();
+        m_title->SetPosition(Point((x - 500) * 0.5, (y - 70) * 0.2));
+    }
 }
 
 bool MainWindow::OnKeyPress(uint64_t keyval)
@@ -155,13 +171,20 @@ bool MainWindow::OnTimeout()
                 continue;
             }
 
-            m_asteroids[i]->Update(DT);
+            if (m_asteroids[i])
+            {
+                m_asteroids[i]->Update(DT);
+            }
         }
 
         // Обновить пули
         for (int i = 0; i < m_bullets.size(); i++)
         {
-            m_bullets[i]->Update(DT);
+            if (m_bullets[i])
+            {
+                m_bullets[i]->Update(DT);
+            }
+
             if (!m_bullets[i]->GetMesh())
             {
                 delete m_bullets[i];
@@ -181,7 +204,17 @@ bool MainWindow::OnTimeout()
 
         for (int i = 0; i < m_bullets.size(); i++)
         {
-            m_bullets[i]->EvaluateCollisions(asteroids, n);
+            if (m_bullets[i])
+            {
+                m_bullets[i]->EvaluateCollisions(asteroids, n);
+            }
+        }
+
+        // Проверить состояние игрока
+        if (m_player->GetHealth() == 0)
+        {
+            CreateEndGameScreen();
+            return true;
         }
 
         // Обновить данные на экране
@@ -191,6 +224,7 @@ bool MainWindow::OnTimeout()
         break;
     }
    
+    m_time += DT;
 	ReDraw();
     CaptureKeyboard(this);
     return true;
@@ -207,7 +241,6 @@ bool MainWindow::OnLeftMouseButtonClick(const Point &Position)
         Bullet *bullet = new Bullet(this, m_player->GetPosition(), Rect(10, 10), 5.0, MeshType::Bullet);
         bullet->SetVelocity(m_player->GetForward() * Point(BULLET_SPEED, BULLET_SPEED));
         m_bullets.push_back(bullet);
-
         break;
     }
     return true;
@@ -219,27 +252,22 @@ void MainWindow::CreateStartScreen()
     DeleteAllChildren();
     m_bullets.clear();
     m_asteroids.clear();
-    SetFrameWidth(1);
 
     // текст названия
-    Text *text1 = new Text("ASTEROIDS");
-    text1->SetTextColor(RGB(1, 1, 1));
-    text1->SetFont("Monospace", 80, 1, -1);
-    text1->SetAlignment(TEXT_ALIGNH_CENTER|TEXT_ALIGNV_CENTER);
-    text1->SetWrap(true);
-    text1->SetFrameWidth(1);
-    text1->SetFrameColor(RGB(1, 1, 1));
-    AddChild(text1, Point(0, 0),Rect(800, 200));
+    m_title = new Text("ASTEROIDS");
+    m_title->SetTextColor(RGB(1, 1, 1));
+    m_title->SetFont("Monospace", 80, 1, -1);
+    m_title->SetAlignment(TEXT_ALIGNH_CENTER|TEXT_ALIGNV_CENTER);
+    m_title->SetWrap(true);
+    AddChild(m_title, Point(150, 200),Rect(500, 70));
 
     // текст начала игры
     Text *text2 = new Text("PRESS SPACE TO START");
     text2->SetTextColor(RGB(1, 1, 1));
-    text2->SetFont("Monospace", 40, 1, -1);
+    text2->SetFont("Monospace", 20, 1, -1);
     text2->SetAlignment(TEXT_ALIGNH_CENTER|TEXT_ALIGNV_CENTER);
     text2->SetWrap(true);
-    text2->SetFrameWidth(1);
-    text2->SetFrameColor(RGB(1, 1, 1));
-    AddChild(text2, Point(0, 600),Rect(800, 200));
+    AddChild(text2, Point(0, 700),Rect(300, 50));
 
     // Астероиды
     for (int i = 0; i < 10; i++)
@@ -258,7 +286,8 @@ void MainWindow::CreateGame()
     DeleteAllChildren();
     m_bullets.clear();
     m_asteroids.clear();
-    SetFrameWidth(0);
+    SetFrameWidth(2);
+    SetFrameColor(RGB(0, 0, 0));
 
     Point pt(20,20);
     Rect r(20,40);
@@ -275,23 +304,30 @@ void MainWindow::CreateGame()
     num3->SetColor(m_foreground);
     AddChild(num3, pt + Point(60, 0), r);
 
+    num4 = new Digit7(0);
+    num4->SetColor(m_foreground);
+    AddChild(num4, pt + Point(90, 0), r);
+
     // Счет
     m_score = 0;
     float m_dt = 1.0 / FPS;
 
     // Игрок
-    m_player = new Player(this, Point(400, 400), Rect(40, 40), 15, MeshType::Player);
+    Rect mysize = GetInteriorSize();
+    uint16_t x = mysize.GetWidth(), y = mysize.GetHeight();
+    m_player = new Player(this, Point(x * 0.5, y * 0.5), Rect(40, 40), 15, MeshType::Player);
     m_player->SetDrag(0.99);
+    m_player->GetMesh()->SetColor(PLAYER_COLOR);
 
     // Показатели здоровья
     hp1 = new Mesh(MeshType::Player);
-    AddChild(hp1, pt + Point(-7, 55), Rect(35, 35));
+    AddChild(hp1, pt + Point(-3, 55), Rect(35, 40));
 
     hp2 = new Mesh(MeshType::Player);
-    AddChild(hp2, pt + Point(23, 55), Rect(35, 35));
+    AddChild(hp2, pt + Point(37, 55), Rect(35, 40));
 
     hp3 = new Mesh(MeshType::Player);
-    AddChild(hp3, pt + Point(53, 55), Rect(35, 35));
+    AddChild(hp3, pt + Point(77, 55), Rect(35, 40));
 
     // Астероиды
     for (int i = 0; i < 10; i++)
@@ -304,23 +340,73 @@ void MainWindow::CreateGame()
     }
 }
 
+void MainWindow::CreateEndGameScreen()
+{
+    m_state = GameState::End;
+    DeleteAllChildren();
+    m_bullets.clear();
+    m_asteroids.clear();
+
+    Rect mysize = GetInteriorSize();
+    uint16_t x = mysize.GetWidth(), y = mysize.GetHeight();
+
+    // Текст конца игры
+    m_gameOver = new Text("GAME OVER");
+    m_gameOver->SetTextColor(RGB(1, 1, 1));
+    m_gameOver->SetFont("Monospace", 80, 1, -1);
+    m_gameOver->SetAlignment(TEXT_ALIGNH_CENTER|TEXT_ALIGNV_CENTER);
+    m_gameOver->SetWrap(true);
+    AddChild(m_gameOver, Point((x - 500) * 0.5, (y - 70) * 0.2),Rect(500, 70));
+
+    // Текст перезапуска игры
+    Text *text3 = new Text("PRESS SPACE TO RESET");
+    text3->SetTextColor(RGB(1, 1, 1));
+    text3->SetFont("Monospace", 20, 1, -1);
+    text3->SetAlignment(TEXT_ALIGNH_CENTER|TEXT_ALIGNV_CENTER);
+    text3->SetWrap(true);
+    AddChild(text3, Point(0, 700),Rect(300, 50));
+
+    // Текст выхода
+    Text *text4 = new Text("PRESS ESC TO QUIT");
+    text4->SetTextColor(RGB(1, 1, 1));
+    text4->SetFont("Monospace", 20, 1, -1);
+    text4->SetAlignment(TEXT_ALIGNH_CENTER|TEXT_ALIGNV_CENTER);
+    text4->SetWrap(true);
+    AddChild(text4, Point(0, 750),Rect(300, 50));
+}
+
 void MainWindow::SetScore()
 {
 	time_t ct = time(NULL);
     struct tm *t = localtime(&ct);
-    if (m_score >= 1000) {
+    if (m_score >= 10000)
+    {
         num1->SetDigit(9);
         num2->SetDigit(9);
         num3->SetDigit(9);
-    } else if (m_score >= 100) {
+        num4->SetDigit(9);
+    }
+    else if (m_score >= 1000)
+    {
         num1->SetDigit(getDigitAtPos(m_score, 1));
         num2->SetDigit(getDigitAtPos(m_score, 2));
         num3->SetDigit(getDigitAtPos(m_score, 3));
-    } else if (m_score >= 10) {
+        num4->SetDigit(getDigitAtPos(m_score, 4));
+    } 
+    else if (m_score >= 100)
+    {
         num2->SetDigit(getDigitAtPos(m_score, 1));
         num3->SetDigit(getDigitAtPos(m_score, 2));
-    } else {
+        num4->SetDigit(getDigitAtPos(m_score, 3));
+    } 
+    else if (m_score >= 10)
+    {
         num3->SetDigit(getDigitAtPos(m_score, 1));
+        num4->SetDigit(getDigitAtPos(m_score, 2));
+    } 
+    else
+    {
+        num4->SetDigit(getDigitAtPos(m_score, 1));
     }
 }
 
@@ -329,16 +415,19 @@ void MainWindow::SetHealth()
     if (m_player->GetHealth() == 3)
     {
         hp1->SetActive(false);
+        SetFrameColor(RGB(0.2, 0, 0));
     }
 
     if (m_player->GetHealth() == 2)
     {
         hp2->SetActive(false);
+        SetFrameColor(RGB(0.4, 0, 0));
     }
 
     if (m_player->GetHealth() == 1)
     {
         hp3->SetActive(false);
+        SetFrameColor(RGB(0.8, 0, 0));
     }
 }
 
