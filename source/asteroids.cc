@@ -267,7 +267,7 @@ void MainWindow::CreateStartScreen()
     text2->SetFont("Monospace", 20, 1, -1);
     text2->SetAlignment(TEXT_ALIGNH_CENTER|TEXT_ALIGNV_CENTER);
     text2->SetWrap(true);
-    AddChild(text2, Point(0, 700),Rect(300, 50));
+    AddChild(text2, Point(0, 720),Rect(300, 50));
 
     // Астероиды
     for (int i = 0; i < 10; i++)
@@ -364,7 +364,7 @@ void MainWindow::CreateEndGameScreen()
     text3->SetFont("Monospace", 20, 1, -1);
     text3->SetAlignment(TEXT_ALIGNH_CENTER|TEXT_ALIGNV_CENTER);
     text3->SetWrap(true);
-    AddChild(text3, Point(0, 700),Rect(300, 50));
+    AddChild(text3, Point(0, 670),Rect(300, 50));
 
     // Текст выхода
     Text *text4 = new Text("PRESS ESC TO QUIT");
@@ -372,7 +372,29 @@ void MainWindow::CreateEndGameScreen()
     text4->SetFont("Monospace", 20, 1, -1);
     text4->SetAlignment(TEXT_ALIGNH_CENTER|TEXT_ALIGNV_CENTER);
     text4->SetWrap(true);
-    AddChild(text4, Point(0, 750),Rect(300, 50));
+    AddChild(text4, Point(0, 720),Rect(300, 50));
+
+    // Счет
+    num1 = new Digit7(0);
+    num1->SetColor(m_foreground);
+    num1->SetGap(0.03);
+    AddChild(num1, Point(220, 250), Rect(50, 100));
+
+    num2 = new Digit7(0);
+    num2->SetColor(m_foreground);
+    num2->SetGap(0.03);
+    AddChild(num2, Point(320, 250), Rect(50, 100));
+
+    num3 = new Digit7(0);
+    num3->SetColor(m_foreground);
+    num3->SetGap(0.03);
+    AddChild(num3, Point(420, 250), Rect(50, 100));
+
+    num4 = new Digit7(0);
+    num4->SetColor(m_foreground);
+    num4->SetGap(0.03);
+    AddChild(num4, Point(520, 250), Rect(50, 100));
+    SetScore();
 }
 
 void MainWindow::SetScore()
