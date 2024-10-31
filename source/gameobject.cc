@@ -124,6 +124,11 @@ void GameObject::OnScreenLeft()
 void GameObject::EvaluateCollisions(GameObject *objects[], int n) {
     for (int i = 0; i < n; i++) {
         GameObject *obj = objects[i];
+        if (!objects[i])
+        {
+            break;  // что-то пошло не так, обработаем столкновение на следующем кадре
+        }
+
         double dist = sqrt(pow(m_position.GetX() - obj->GetPosition().GetX(), 2.0) + pow(m_position.GetY() - obj->GetPosition().GetY(), 2.0));
         if (dist <= m_radius + obj->GetRadius()) {
             OnCollision(obj);

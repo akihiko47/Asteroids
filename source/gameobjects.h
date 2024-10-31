@@ -78,7 +78,7 @@ public:
     GameObjectType GetType() const {return GameObjectType::Asteroid;}
 
     void OnCollision(GameObject *hit) {
-        if (hit->GetType() == GameObjectType::Bullet && GetMesh()) {
+        if (hit->GetType() == GameObjectType::Bullet && GetMesh() && hit->GetMesh()) {
             GetMesh()->NotifyParent(GameEvents::AsteroidDestroyed, GetPosition());
             hit->DeleteMesh();
             DeleteMesh();

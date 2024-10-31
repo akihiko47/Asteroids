@@ -15,9 +15,10 @@
 #define FPS 30.0
 #define DT  1.0 / FPS
 
-#define PLAYER_SPEED      150
-#define BULLET_SPEED      350
-#define MIN_ASTEROID_SIZE 30
+#define PLAYER_SPEED          150
+#define BULLET_SPEED          350
+#define MIN_ASTEROID_SIZE     30
+#define ASTEROID_EVERY_FRAMES 120   // Раз в сколько кадров появляется новый астероид
 
 #define BACK_COLOR   RGB(0.05, 0.05, 0.05)
 #define FORE_COLOR   RGB(1.00, 0.95, 0.94)
@@ -68,6 +69,7 @@ private:
     uint32_t  m_score;
     double    m_dt;
     double    m_time;                     // прошедшее время с запуска окна
+    int       m_frames;                   // количество кадров с запуска
 
 
     Digit7   *num1, *num2, *num3, *num4;  // показатели счета
@@ -76,7 +78,8 @@ private:
     std::vector<Asteroid*> m_asteroids;   // астероиды
     std::vector<Bullet*>   m_bullets;     // пули
 
-    Text *m_title;
+    Text *m_title;                        // текст названия игры
+    Point m_titlePos;                     // позиция текста названия игры (для анимации)
     Text *m_gameOver;
 
     GameState m_state;
@@ -138,6 +141,17 @@ bool MainWindow::OnKeyPress(uint64_t keyval)
         {
             m_player->SetVelocity(m_player->GetForward() * Point(PLAYER_SPEED, PLAYER_SPEED));
         }
+        else if (keyval ==  GDK_KEY_space)
+        {
+            if (m_score >= 5)
+            {
+                m_score -= 5;
+                int x = GetSize().GetWidth();
+                int y = GetSize().GetHeight();
+                m_player->SetPosition(Point((rand() % (x - 40)) + 20, (rand() % (y - 40)) + 20));
+            }
+            
+        }
         break;
     
     case GameState::End:
@@ -160,6 +174,9 @@ bool MainWindow::OnTimeout()
     switch(m_state)
     {
     case GameState::Start:
+        m_title->SetPosition(Point(m_title->GetPosition().GetX(), m_titlePos.GetY() + (sin(m_time * 1.5) + 1.0) * 20.0));
+
+
         // Обновить астероиды
         for (int i = 0; i < m_asteroids.size(); i++)
         {
@@ -170,21 +187,23 @@ bool MainWindow::OnTimeout()
 
     case GameState::InGame:
         // Обновить игрока
-        m_player->Update(DT);
-
+        if (m_player)
+        {
+            m_player->Update(DT);
+        }
+        
         // Обновить астероиды
         for (int i = 0; i < m_asteroids.size(); i++)
         {
-            if (!m_asteroids[i]->GetMesh())
-            {
-                delete m_asteroids[i];
-                m_asteroids.erase(m_asteroids.begin() + i);
-                continue;
-            }
-
             if (m_asteroids[i])
             {
                 m_asteroids[i]->Update(DT);
+
+                if (!m_asteroids[i]->GetMesh())
+                {
+                    delete m_asteroids[i];
+                    m_asteroids.erase(m_asteroids.begin() + i);
+                }
             }
         }
 
@@ -194,14 +213,13 @@ bool MainWindow::OnTimeout()
             if (m_bullets[i])
             {
                 m_bullets[i]->Update(DT);
-            }
 
-            if (!m_bullets[i]->GetMesh())
-            {
-                delete m_bullets[i];
-                m_bullets.erase(m_bullets.begin() + i);
+                if (!m_bullets[i]->GetMesh())
+                {
+                    delete m_bullets[i];
+                    m_bullets.erase(m_bullets.begin() + i);
+                }
             }
-            
         }
 
         // Просчитать столкновения
@@ -211,7 +229,10 @@ bool MainWindow::OnTimeout()
         {
             asteroids[i] = m_asteroids[i];
         }
-        m_player->EvaluateCollisions(asteroids, n);
+        if (m_player)
+        {
+            m_player->EvaluateCollisions(asteroids, n);
+        }
 
         for (int i = 0; i < m_bullets.size(); i++)
         {
@@ -228,6 +249,17 @@ bool MainWindow::OnTimeout()
             return true;
         }
 
+        // Создать новые астероиды
+        if (m_frames % ASTEROID_EVERY_FRAMES == 0)
+        {
+            MeshType meshes[] = {MeshType::Asteroid1, MeshType::Asteroid2, MeshType::Asteroid3};
+            int randS = rand()%50 + 50;
+            Asteroid *asteroid = new Asteroid(this, Point(rand() % GetSize().GetWidth(), -50), Rect(randS, randS), randS * 0.4, meshes[rand() % 3]);    
+            asteroid->SetVelocity(Point(std::rand() % 200 - 100, std::rand() % 200 - 100));
+            m_asteroids.push_back(asteroid);
+        }
+
+
         // Обновить данные на экране
         SetScore();
         SetHealth();
@@ -236,6 +268,7 @@ bool MainWindow::OnTimeout()
     }
    
     m_time += DT;
+    m_frames += 1;
 	ReDraw();
     CaptureKeyboard(this);
     return true;
@@ -263,6 +296,7 @@ void MainWindow::CreateStartScreen()
     DeleteAllChildren();
     m_bullets.clear();
     m_asteroids.clear();
+    SetFrameColor(RGB(0, 0, 0));
 
     Rect mysize = GetInteriorSize();
     uint16_t x = mysize.GetWidth(), y = mysize.GetHeight();
@@ -274,6 +308,7 @@ void MainWindow::CreateStartScreen()
     m_title->SetAlignment(TEXT_ALIGNH_CENTER|TEXT_ALIGNV_CENTER);
     m_title->SetWrap(true);
     AddChild(m_title, Point((x - 500) * 0.5, (y - 70) * 0.2), Rect(500, 70));
+    m_titlePos = m_title->GetPosition();
     
 
     // текст начала игры
@@ -349,7 +384,7 @@ void MainWindow::CreateGame()
     {   
         MeshType meshes[] = {MeshType::Asteroid1, MeshType::Asteroid2, MeshType::Asteroid3};
         int randS = rand()%50 + 50;
-        Asteroid *asteroid = new Asteroid(this, Point(80 * i, 0), Rect(randS, randS), randS * 0.4, meshes[i % 3]);    
+        Asteroid *asteroid = new Asteroid(this, Point(rand() % GetSize().GetWidth(), -50), Rect(randS, randS), randS * 0.4, meshes[i % 3]);    
         asteroid->SetVelocity(Point(std::rand() % 200 - 100, std::rand() % 200 - 100));
         m_asteroids.push_back(asteroid);
     }
