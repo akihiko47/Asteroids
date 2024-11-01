@@ -1,21 +1,22 @@
 #include "window.h"
+#include "fpoint.h"
 #include "mesh.h"
 #include "gameobject.h"
 #include <iostream>
 #include <cmath>
 
 
-GameObject::GameObject(Window *parent, const Point &pos, const Rect &size, double rad, MeshType meshType)
+GameObject::GameObject(Window *parent, const FPoint &pos, const Rect &size, double rad, MeshType meshType)
 {
     m_mesh = new Mesh(meshType);
-    Point meshPos = Point(pos.GetX() - m_mesh->GetSize().GetWidth() * 0.5, pos.GetY() - m_mesh->GetSize().GetHeight() * 0.5);
+    FPoint meshPos = FPoint(pos.GetX() - m_mesh->GetSize().GetWidth() * 0.5, pos.GetY() - m_mesh->GetSize().GetHeight() * 0.5);
     parent->AddChild(m_mesh, meshPos, size);
 
-    m_borders = Point(parent->GetSize().GetWidth(), parent->GetSize().GetHeight());
+    m_borders = FPoint(parent->GetSize().GetWidth(), parent->GetSize().GetHeight());
 
     m_position = pos;
-    m_velocity = Point(0, 0);
-    m_forward = Point(0, -1);
+    m_velocity = FPoint(0, 0);
+    m_forward = FPoint(0, -1);
     m_rotation = 0.0;
     m_drag = 1.0;
     m_radius = rad;
@@ -52,27 +53,27 @@ void GameObject::Rotate(double dphi)
     m_rotation += dphi;
 }
 
-Point GameObject::GetPosition() const
+FPoint GameObject::GetPosition() const
 {
     return m_position;
 }
 
-void GameObject::SetPosition(const Point &pos)
+void GameObject::SetPosition(const FPoint &pos)
 {
     m_position = pos;
 }
 
-Point GameObject::GetVelocity() const
+FPoint GameObject::GetVelocity() const
 {
     return m_velocity;
 }
 
-Point GameObject::GetForward() const
+FPoint GameObject::GetForward() const
 {
     return m_forward;
 }
 
-void GameObject::SetVelocity(const Point &vel)
+void GameObject::SetVelocity(const FPoint &vel)
 {
     m_velocity = vel;
 }
@@ -145,24 +146,24 @@ void GameObject::Update(double dt)
     m_position.SetY(m_position.GetY() + m_velocity.GetY() * dt);
 
     // Изменить вектор направления
-    m_forward = Mesh::RotatePoint(Point(0, 0), Point(0, -1), m_rotation);
+    m_forward = Mesh::RotatePoint(FPoint(0, 0), FPoint(0, -1), m_rotation);
 
     // Изменить положение отображаемой модели
     if (GetMesh())
     {
-        Point meshPos = Point(m_position.GetX() - m_mesh->GetSize().GetWidth() * 0.5, m_position.GetY() - m_mesh->GetSize().GetHeight() * 0.5);
+        FPoint meshPos = FPoint(m_position.GetX() - m_mesh->GetSize().GetWidth() * 0.5, m_position.GetY() - m_mesh->GetSize().GetHeight() * 0.5);
         m_mesh->SetPosition(meshPos);
         m_mesh->SetRotation(m_rotation);
     }
 
     // Применить трение
-    m_velocity = m_velocity * Point(m_drag, m_drag);
+    m_velocity = m_velocity * FPoint(m_drag, m_drag);
 
     // Обновить границы экрана
     if (GetMesh())
     {
         Rect r = GetMesh()->GetParent()->GetSize();
-        m_borders = Point(r.GetWidth(), r.GetHeight());
+        m_borders = FPoint(r.GetWidth(), r.GetHeight());
     }
 
     // Проверить нахождение внутри границ экрана

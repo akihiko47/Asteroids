@@ -13,7 +13,7 @@ enum GameEvents
 class Player : public GameObject
 {
 public:
-    Player(Window *parent, const Point &pos, const Rect &size, double rad, MeshType meshType) : 
+    Player(Window *parent, const FPoint &pos, const Rect &size, double rad, MeshType meshType) : 
         GameObject(parent, pos, size, rad, meshType),
         m_health(4),
         m_hitCooldown(2),
@@ -71,7 +71,7 @@ private:
 class Asteroid : public GameObject
 {
 public:
-    Asteroid(Window *parent, const Point &pos, const Rect &size, double rad, MeshType meshType) : 
+    Asteroid(Window *parent, const FPoint &pos, const Rect &size, double rad, MeshType meshType) : 
         GameObject(parent, pos, size, rad, meshType) {}
     ~Asteroid() {}
 
@@ -97,7 +97,7 @@ public:
 class Bullet : public GameObject
 {
 public:
-    Bullet(Window *parent, const Point &pos, const Rect &size, double rad, MeshType meshType) :
+    Bullet(Window *parent, const FPoint &pos, const Rect &size, double rad, MeshType meshType) :
         GameObject(parent, pos, size, rad, meshType),
         m_maxLifeTime(BULLET_LIFETIME),
         m_lifetime(0) {}

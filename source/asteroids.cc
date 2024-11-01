@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include "window.h"
+#include "fpoint.h"
 #include "digit7.h"
 #include "mesh.h"
 #include "gameobjects.h"
@@ -17,7 +18,7 @@
 
 #define PLAYER_SPEED          150
 #define BULLET_SPEED          350
-#define MIN_ASTEROID_SIZE     30
+#define MIN_ASTEROID_SIZE     40
 #define ASTEROID_EVERY_FRAMES 120   // Раз в сколько кадров появляется новый астероид
 
 #define BACK_COLOR   RGB(0.05, 0.05, 0.05)
@@ -139,7 +140,7 @@ bool MainWindow::OnKeyPress(uint64_t keyval)
         }
         else if (keyval == 'w') 
         {
-            m_player->SetVelocity(m_player->GetForward() * Point(PLAYER_SPEED, PLAYER_SPEED));
+            m_player->SetVelocity(m_player->GetForward() * FPoint(PLAYER_SPEED, PLAYER_SPEED));
         }
         else if (keyval ==  GDK_KEY_space)
         {
@@ -148,7 +149,7 @@ bool MainWindow::OnKeyPress(uint64_t keyval)
                 m_score -= 5;
                 int x = GetSize().GetWidth();
                 int y = GetSize().GetHeight();
-                m_player->SetPosition(Point((rand() % (x - 40)) + 20, (rand() % (y - 40)) + 20));
+                m_player->SetPosition(FPoint((rand() % (x - 40)) + 20, (rand() % (y - 40)) + 20));
             }
             
         }
@@ -254,8 +255,8 @@ bool MainWindow::OnTimeout()
         {
             MeshType meshes[] = {MeshType::Asteroid1, MeshType::Asteroid2, MeshType::Asteroid3};
             int randS = rand()%50 + 50;
-            Asteroid *asteroid = new Asteroid(this, Point(rand() % GetSize().GetWidth(), -50), Rect(randS, randS), randS * 0.4, meshes[rand() % 3]);    
-            asteroid->SetVelocity(Point(std::rand() % 200 - 100, std::rand() % 200 - 100));
+            Asteroid *asteroid = new Asteroid(this, FPoint(rand() % GetSize().GetWidth(), -50), Rect(randS, randS), randS * 0.4, meshes[rand() % 3]);    
+            asteroid->SetVelocity(FPoint(std::rand() % 200 - 100, std::rand() % 200 - 100));
             m_asteroids.push_back(asteroid);
         }
 
@@ -283,7 +284,7 @@ bool MainWindow::OnLeftMouseButtonClick(const Point &Position)
 
     case GameState::InGame:
         Bullet *bullet = new Bullet(this, m_player->GetPosition(), Rect(10, 10), 5.0, MeshType::Bullet);
-        bullet->SetVelocity(m_player->GetForward() * Point(BULLET_SPEED, BULLET_SPEED));
+        bullet->SetVelocity(m_player->GetForward() * FPoint(BULLET_SPEED, BULLET_SPEED));
         m_bullets.push_back(bullet);
         break;
     }
@@ -324,8 +325,8 @@ void MainWindow::CreateStartScreen()
     {   
         MeshType meshes[] = {MeshType::Asteroid1, MeshType::Asteroid2, MeshType::Asteroid3};
         int randS = rand()%50 + 50;
-        Asteroid *asteroid = new Asteroid(this, Point(80 * i, 0), Rect(randS, randS), randS * 0.4, meshes[i % 3]);    
-        asteroid->SetVelocity(Point(std::rand() % 200 - 100, std::rand() % 200 - 100));
+        Asteroid *asteroid = new Asteroid(this, FPoint(80 * i, 0), Rect(randS, randS), randS * 0.4, meshes[i % 3]);    
+        asteroid->SetVelocity(FPoint(std::rand() % 200 - 100, std::rand() % 200 - 100));
         m_asteroids.push_back(asteroid);
     }
 }
@@ -365,7 +366,7 @@ void MainWindow::CreateGame()
     // Игрок
     Rect mysize = GetInteriorSize();
     uint16_t x = mysize.GetWidth(), y = mysize.GetHeight();
-    m_player = new Player(this, Point(x * 0.5, y * 0.5), Rect(40, 40), 15, MeshType::Player);
+    m_player = new Player(this, FPoint(x * 0.5, y * 0.5), Rect(40, 40), 15, MeshType::Player);
     m_player->SetDrag(0.99);
     m_player->GetMesh()->SetColor(PLAYER_COLOR);
 
@@ -384,8 +385,8 @@ void MainWindow::CreateGame()
     {   
         MeshType meshes[] = {MeshType::Asteroid1, MeshType::Asteroid2, MeshType::Asteroid3};
         int randS = rand()%50 + 50;
-        Asteroid *asteroid = new Asteroid(this, Point(rand() % GetSize().GetWidth(), -50), Rect(randS, randS), randS * 0.4, meshes[i % 3]);    
-        asteroid->SetVelocity(Point(std::rand() % 200 - 100, std::rand() % 200 - 100));
+        Asteroid *asteroid = new Asteroid(this, FPoint(rand() % GetSize().GetWidth(), -50), Rect(randS, randS), randS * 0.4, meshes[i % 3]);    
+        asteroid->SetVelocity(FPoint(std::rand() % 200 - 100, std::rand() % 200 - 100));
         m_asteroids.push_back(asteroid);
     }
 }
@@ -520,8 +521,8 @@ void MainWindow::OnNotify(Window *child, uint32_t type, const Point &position)
             for (int i = 0; i < 2; i++)
             {
                 MeshType meshes[] = {MeshType::Asteroid1, MeshType::Asteroid2, MeshType::Asteroid3};
-                Asteroid *asteroid = new Asteroid(this, Point(x, y), Rect(childSize, childSize), childSize * 0.4, meshes[((int)childSize + i) % 3]);    
-                asteroid->SetVelocity(Point(std::rand() % 200 - 100, std::rand() % 200 - 100));
+                Asteroid *asteroid = new Asteroid(this, FPoint(x, y), Rect(childSize, childSize), childSize * 0.4, meshes[((int)childSize + i) % 3]);    
+                asteroid->SetVelocity(FPoint(std::rand() % 200 - 100, std::rand() % 200 - 100));
                 m_asteroids.push_back(asteroid);
             }
         }

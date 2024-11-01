@@ -47,7 +47,7 @@ class Point
 {
 public:
     Point() : m_x(0), m_y(0) {}
-    Point(double x, double y) : m_x(x), m_y(y) {}
+    Point(uint16_t x, uint16_t y) : m_x(x), m_y(y) {}
     Point(const Point &pt) : m_x(pt.GetX()), m_y(pt.GetY()) {}
     Point(const Rect &r) : m_x(r.GetWidth()), m_y(r.GetHeight()) {}
     ~Point() {}
@@ -69,17 +69,6 @@ public:
         return res;
     }
 
-    Point operator * (const Point pt) const
-    {
-        Point res(GetX()*pt.GetX(), GetY()*pt.GetY());
-        return res;
-    }
-    Point operator / (const Point pt) const
-    {
-        Point res(GetX()/pt.GetX(), GetY()/pt.GetY());
-        return res;
-    }
-
     Point operator + (const Rect &r) const
     {
         Point res(GetX()+r.GetWidth(), GetY()+r.GetHeight());
@@ -91,14 +80,14 @@ public:
         return res;
     }
 
-    double GetX() const { return m_x; }
-    double GetY() const { return m_y; }
-    void     SetX(const double x) { m_x = x; }
-    void     SetY(const double y) { m_y = y; }
+    uint16_t GetX() const { return m_x; }
+    uint16_t GetY() const { return m_y; }
+    void     SetX(const uint16_t x) { m_x = x; }
+    void     SetY(const uint16_t y) { m_y = y; }
 
 private:
-    double m_x;
-    double m_y;
+    uint16_t m_x;
+    uint16_t m_y;
 };
 
 class RGB
